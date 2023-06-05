@@ -1,5 +1,6 @@
 import datetime
 import tkinter as tk
+
 from tkinter import messagebox
 
 from func.calculate_next_thursday import calculate_next_thursday
