@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Comptes</title>
+</head>
+<body>
+    <h1>Comptes</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Achat de carte de crédit</th>
+                <th>Montant</th>
+                <th>Heure d'envoi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for compte in comptes %}
+            <tr>
+                <td>{{ compte.achat_carte_credit }}</td>
+                <td>{{ compte.montant }}</td>
+                <td>{{ compte.heure_envoi }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div hx-target="#minuteur" hx-swap="outerHTML" hx-indicator="true" hx-get="{% url 'minuteur' %}"></div>
+
+    <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
+</body>
+</html>
