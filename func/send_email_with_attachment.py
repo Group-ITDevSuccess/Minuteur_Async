@@ -4,8 +4,8 @@ import smtplib
 def send_email_with_attachment(filename, recipient):
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
-    smtp_username = "votre_adresse_email@gmail.com"
-    smtp_password = "votre_mot_de_passe"
+    smtp_username = "muriel.raharison@inviso-group.com"
+    smtp_password = "DzczeHgosm"
 
     message = EmailMessage()
     message["Subject"] = "Données de requête SQL"

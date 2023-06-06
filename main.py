@@ -13,7 +13,7 @@ from func.send_email_with_attachment import send_email_with_attachment
 def execute_script():
     df = execute_sql_query()
     filename = export_to_excel(df)
-    recipient = "raharisontsidiany@gmail.com"
+    recipient = "sage@inviso-group.com"
     send_email_with_attachment(filename, recipient)
     messagebox.showinfo(
         "Succès", "Les données ont été envoyées par e-mail à " + recipient)
@@ -24,8 +24,8 @@ def update_label_periodically():
     window.after(1000, update_label_periodically)
 
 def update_time_remaining_label():
-    time_remaining = calculate_time_remaining()
-    if time_remaining.days == 0 and time_remaining.seconds == 0:
+    heur_rappel = calculate_time_remaining()
+    if heur_rappel.days == 0 and heur_rappel.seconds == 0:
         next_thursday = calculate_next_thursday()
         execute_script()
         time_until_next_thursday = next_thursday - datetime.datetime.now()
@@ -36,10 +36,10 @@ def update_time_remaining_label():
                                        str(time_until_next_thursday.seconds %
                                            60) + " secondes"
     else:
-        time_remaining_label["text"] = "Temps restant jusqu'au prochain envoi : " + str(time_remaining.days) + " jours, " + \
-                                       str(time_remaining.seconds // 3600) + " heures, " + \
-                                       str((time_remaining.seconds // 60) % 60) + " minutes, " + \
-                                       str(time_remaining.seconds %
+        time_remaining_label["text"] = "Temps restant jusqu'au prochain envoi : " + str(heur_rappel.days) + " jours, " + \
+                                       str(heur_rappel.seconds // 3600) + " heures, " + \
+                                       str((heur_rappel.seconds // 60) % 60) + " minutes, " + \
+                                       str(heur_rappel.seconds %
                                            60) + " secondes"
 
 

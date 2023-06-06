@@ -1,13 +1,13 @@
 import datetime
 
 def calculate_time_remaining():
-    current_datetime = datetime.datetime.now()
-    target_datetime = current_datetime.replace(hour=9, minute=0, second=0, microsecond=0)
-    days_ahead = (3 - current_datetime.weekday() + 7) % 7
+    date_heur_actuel = datetime.datetime.now()
+    date_heur_prochaine = date_heur_actuel.replace(hour=9, minute=0, second=0, microsecond=0)
+    jours = (3 - date_heur_actuel.weekday() + 7) % 7
 
-    if current_datetime >= target_datetime:
-        days_ahead += 7
+    if date_heur_actuel >= date_heur_prochaine:
+        jours += 7
 
-    target_datetime += datetime.timedelta(days=days_ahead)
-    time_remaining = target_datetime - current_datetime
-    return time_remaining
+    date_heur_prochaine += datetime.timedelta(days=jours)
+    heur_rappel = date_heur_prochaine - date_heur_actuel
+    return heur_rappel
