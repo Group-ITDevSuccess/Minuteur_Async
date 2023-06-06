@@ -1,5 +1,6 @@
 import datetime
 import tkinter as tk
+import configparser
 
 from tkinter import messagebox
 
@@ -9,11 +10,20 @@ from func.execute_sql_query import execute_sql_query
 from func.export_to_excel import export_to_excel
 from func.send_email_with_attachment import send_email_with_attachment
 
+# Chemin du fichier .env
+env_file = '.env'
+
+# Créer un objet ConfigParser
+config = configparser.ConfigParser()
+
+# Lire les variables d'environnement à partir du fichier .env
+config.read(env_file)
+
 
 def execute_script():
     df = execute_sql_query()
     filename = export_to_excel(df)
-    recipient = "raharisontsidiany@gmail.com"
+    recipient = config.get('USER', 'RECIPIENT')
     send_email_with_attachment(filename, recipient)
     # messagebox.showinfo(
     #     "Succès", "Les données ont été envoyées par e-mail à " + recipient)

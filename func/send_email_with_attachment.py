@@ -1,12 +1,28 @@
 from email.message import EmailMessage
 import smtplib
+import configparser
+
+# Chemin du fichier .env
+env_file = '.env'
+
+# Créer un objet ConfigParser
+config = configparser.ConfigParser()
+
+# Lire les variables d'environnement à partir du fichier .env
+config.read(env_file)
+
+# Récupérer les valeurs des variables d'environnement
+smtp_server = config.get('DEFAULT', 'SMTP_SERVEUR')
+smtp_username = config.get('DEFAULT', 'SMTP_USERNAME')
+smtp_password = config.get('DEFAULT', 'SMTP_PASSWORD')
+smtp_port = config.get('DEFAULT', 'SMTP_PORT')
+
+# Vérifiez si les variables d'environnement sont définies
+if smtp_username is None or smtp_password is None:
+    raise ValueError("Les variables d'environnement SMTP_USERNAME et SMTP_PASSWORD doivent être définies.")
+
 
 def send_email_with_attachment(filename, recipient):
-    smtp_server = "mail.inviso-group.com"
-    smtp_port = 587
-    smtp_username = "muriel.raharison@inviso-group.com"
-    smtp_password = "DzczeHgosm"
-
     message = EmailMessage()
     message["Subject"] = "Données de requête SQL"
     message["From"] = smtp_username
@@ -22,4 +38,3 @@ def send_email_with_attachment(filename, recipient):
         server.starttls()
         server.login(smtp_username, smtp_password)
         server.send_message(message)
-
