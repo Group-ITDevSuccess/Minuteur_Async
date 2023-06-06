@@ -1,7 +1,7 @@
 import datetime
 import tkinter as tk
 
-# from tkinter import messagebox
+from tkinter import messagebox
 
 from func.calculate_next_thursday import calculate_next_thursday
 from func.calculate_time_remaining import calculate_time_remaining
@@ -13,7 +13,7 @@ from func.send_email_with_attachment import send_email_with_attachment
 def execute_script():
     df = execute_sql_query()
     filename = export_to_excel(df)
-    recipient = "sage@inviso-group.com"
+    recipient = "raharisontsidiany@gmail.com"
     send_email_with_attachment(filename, recipient)
     # messagebox.showinfo(
     #     "Succès", "Les données ont été envoyées par e-mail à " + recipient)
