@@ -2,7 +2,7 @@ import pandas as pd
 import pyodbc
 
 def execute_sql_query():
-     # Informations de connexion
+    # Informations de connexion
     server = '192.168.1.161'
     database = 'NMP'
     username = 'reader'
@@ -15,20 +15,34 @@ def execute_sql_query():
     connection = pyodbc.connect(conn_str)
 
     if connection:
-        print('Connecter au BD')
+        print('Connecté à la base de données')
 
     query = """
-        SELECT F_ECRITUREC.CT_NUM,CT_INTITULE, 
-        SUM(CASE WHEN EC_SENS=0 THEN EC_MONTANT ELSE  -EC_MONTANT END) 
-        AS SUMS  FROM F_ECRITUREC INNER JOIN F_COMPTET ON F_ECRITUREC.CT_NUM=F_COMPTET.CT_NUM 
-        GROUP BY F_ECRITUREC.CT_NUM,CT_INTITULE
-        """
-    
+        SELECT F_ECRITUREC.CT_NUM, CT_INTITULE, 
+        SUM(CASE WHEN EC_SENS=0 THEN EC_MONTANT ELSE -EC_MONTANT END) 
+        AS SUMS FROM F_ECRITUREC INNER JOIN F_COMPTET ON F_ECRITUREC.CT_NUM=F_COMPTET.CT_NUM 
+        GROUP BY F_ECRITUREC.CT_NUM, CT_INTITULE
+    """
+
     with connection.cursor() as cursor:
         cursor.execute(query)
         rows = cursor.fetchall()
+        print("Rows: ", rows)  # Afficher les valeurs récupérées depuis la base de données
+
+        if rows:
+            # Convertir les objets pyodbc.Row en tuples
+            rows = [tuple(row) for row in rows]
+
+            # Vérifier la structure des données
+            data_types = [type(row) for row in rows]
+            print("Data Type: ", data_types)
+
+            if all(isinstance(row, tuple) for row in rows):
+                df = pd.DataFrame(rows, columns=["CT_NUM", "CT_INTITULE", "SUMS"])
+                print("DF: ", df)  # Afficher le DataFrame pour vérification
+            else:
+                print("Les valeurs récupérées ne sont pas au format attendu.")
 
     connection.close()
 
-    df = pd.DataFrame(rows, columns=["CT_NUM", "CT_INTITULE", "SUMS"])
     return df

@@ -2,7 +2,7 @@ from email.message import EmailMessage
 import smtplib
 
 def send_email_with_attachment(filename, recipient):
-    smtp_server = "smtp.gmail.com"
+    smtp_server = "mail.inviso-group.com"
     smtp_port = 587
     smtp_username = "muriel.raharison@inviso-group.com"
     smtp_password = "DzczeHgosm"
