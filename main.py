@@ -50,8 +50,6 @@ window.title("Programme d'envoi de données")
 time_remaining_label = tk.Label(window, text="")
 time_remaining_label.pack()
 
-
-
 update_label_periodically()
 
 execute_button = tk.Button(
