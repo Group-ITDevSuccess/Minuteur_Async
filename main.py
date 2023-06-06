@@ -1,7 +1,7 @@
 import datetime
 import tkinter as tk
 
-from tkinter import messagebox
+# from tkinter import messagebox
 
 from func.calculate_next_thursday import calculate_next_thursday
 from func.calculate_time_remaining import calculate_time_remaining
@@ -15,8 +15,8 @@ def execute_script():
     filename = export_to_excel(df)
     recipient = "sage@inviso-group.com"
     send_email_with_attachment(filename, recipient)
-    messagebox.showinfo(
-        "Succès", "Les données ont été envoyées par e-mail à " + recipient)
+    # messagebox.showinfo(
+    #     "Succès", "Les données ont été envoyées par e-mail à " + recipient)
     update_time_remaining_label()
 
 def update_label_periodically():
