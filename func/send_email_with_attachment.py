@@ -18,8 +18,8 @@ smtp_password = config.get('DEFAULT', 'SMTP_PASSWORD')
 smtp_port = config.get('DEFAULT', 'SMTP_PORT')
 
 # Vérifiez si les variables d'environnement sont définies
-if smtp_username is None or smtp_password is None:
-    raise ValueError("Les variables d'environnement SMTP_USERNAME et SMTP_PASSWORD doivent être définies.")
+if smtp_username is None or smtp_password is None or smtp_password is None or smtp_port is None:
+    raise ValueError("Les variables d'environnements doivent être définies.")
 
 
 def send_email_with_attachment(filename, recipient):
@@ -38,3 +38,4 @@ def send_email_with_attachment(filename, recipient):
         server.starttls()
         server.login(smtp_username, smtp_password)
         server.send_message(message)
+        print(f"Message sent to {recipient}")
