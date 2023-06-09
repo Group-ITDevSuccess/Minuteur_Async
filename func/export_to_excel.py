@@ -1,14 +1,15 @@
 from openpyxl import Workbook
 from openpyxl.styles import Border, Side, PatternFill, Font
 
+
 def export_to_excel(df):
     workbook = Workbook()
     sheet = workbook.active
 
     # Création d'un style de bordure pour les cellules
-    border_style = Border(left=Side(style='thin'), 
-                          right=Side(style='thin'), 
-                          top=Side(style='thin'), 
+    border_style = Border(left=Side(style='thin'),
+                          right=Side(style='thin'),
+                          top=Side(style='thin'),
                           bottom=Side(style='thin'))
 
     # Création d'un style de remplissage pour l'en-tête

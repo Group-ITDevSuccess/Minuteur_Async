@@ -29,9 +29,11 @@ def execute_script():
     #     "Succès", "Les données ont été envoyées par e-mail à " + recipient)
     update_time_remaining_label()
 
+
 def update_label_periodically():
     update_time_remaining_label()
     window.after(1000, update_label_periodically)
+
 
 def update_time_remaining_label():
     heur_rappel = calculate_time_remaining()
@@ -51,7 +53,6 @@ def update_time_remaining_label():
                                        str((heur_rappel.seconds // 60) % 60) + " minutes, " + \
                                        str(heur_rappel.seconds %
                                            60) + " secondes"
-
 
 
 window = tk.Tk()

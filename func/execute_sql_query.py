@@ -1,12 +1,23 @@
 import pandas as pd
 import pyodbc
+import configparser
+
+# Chemin du fichier .env
+env_file = '.env'
+
+# Créer un objet ConfigParser
+config = configparser.ConfigParser()
+
+# Lire les variables d'environnement à partir du fichier .env
+config.read(env_file)
+
 
 def execute_sql_query():
     # Informations de connexion
-    server = '192.168.1.161'
-    database = 'NMP'
-    username = 'reader'
-    password = 'm1234'
+    server = config.get('SERVER', 'SERVER_CONNEXION')
+    database = config.get('SERVER', 'DATABASE_CONNEXION')
+    username = config.get('SERVER', 'USER_CONNEXION')
+    password = config.get('SERVER', 'PASS_CONNEXION')
 
     # Chaîne de connexion
     conn_str = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}"

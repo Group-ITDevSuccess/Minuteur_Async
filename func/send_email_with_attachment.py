@@ -34,7 +34,7 @@ def send_email_with_attachment(filename, recipient):
         content = file.read()
         message.add_attachment(content, maintype="application", subtype="octet-stream", filename=filename)
 
-    with smtplib.SMTP(smtp_server, smtp_port) as server:
+    with smtplib.SMTP(smtp_server, int(smtp_port)) as server:
         server.starttls()
         server.login(smtp_username, smtp_password)
         server.send_message(message)
