@@ -18,20 +18,39 @@ config = configparser.ConfigParser()
 # Lire les variables d'environnement à partir du fichier .env
 config.read(env_file)
 
+# Récupérer les valeurs des variables d'environnement
+server_default = config.get('DEFAULT', 'SMTP_SERVEUR')
+username_default = config.get('DEFAULT', 'SMTP_USERNAME')
+password_default = config.get('DEFAULT', 'SMTP_PASSWORD')
+port_default = config.get('DEFAULT', 'SMTP_PORT')
+recipient = config.get('USER', 'RECIPIENT')
+
+# Informations de connexion
+server_connexion = config.get('SERVER', 'SERVER_CONNEXION')
+database_connexion = config.get('SERVER', 'DATABASE_CONNEXION')
+username_connexion = config.get('SERVER', 'USER_CONNEXION')
+password_connexion = config.get('SERVER', 'PASS_CONNEXION')
+
+smtp = {'server': server_default,
+        'username': username_default,
+        'password': password_default,
+        'port': port_default}
+
+base = {
+    'server': server_connexion,
+    'database': database_connexion,
+    'username': username_connexion,
+    'password': password_connexion
+}
+
 
 def execute_script():
-    df = execute_sql_query()
+    df = execute_sql_query(base)
     filename = export_to_excel(df)
-    recipient = config.get('USER', 'RECIPIENT')
 
-    send_email_with_attachment(filename, recipient)
+    recipients = recipient.split(",")
 
-    # Exécutez l'envoi de l'e-mail dans un thread séparé
-    # email_thread = threading.Thread(target=send_email_with_attachment, args=(filename, recipient))
-    # email_thread.start()
-
-    # messagebox.showinfo(
-    #     "Succès", "Les données ont été envoyées par e-mail à " + recipient)
+    send_email_with_attachment(filename, recipients, smtp)
     update_time_remaining_label()
 
 
