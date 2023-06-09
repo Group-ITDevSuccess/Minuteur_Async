@@ -1,8 +1,7 @@
 import datetime
 import tkinter as tk
 import configparser
-
-from tkinter import messagebox
+import threading
 
 from func.calculate_next_thursday import calculate_next_thursday
 from func.calculate_time_remaining import calculate_time_remaining
@@ -24,7 +23,13 @@ def execute_script():
     df = execute_sql_query()
     filename = export_to_excel(df)
     recipient = config.get('USER', 'RECIPIENT')
+
     send_email_with_attachment(filename, recipient)
+
+    # Exécutez l'envoi de l'e-mail dans un thread séparé
+    # email_thread = threading.Thread(target=send_email_with_attachment, args=(filename, recipient))
+    # email_thread.start()
+
     # messagebox.showinfo(
     #     "Succès", "Les données ont été envoyées par e-mail à " + recipient)
     update_time_remaining_label()
@@ -39,7 +44,7 @@ def update_time_remaining_label():
     heur_rappel = calculate_time_remaining()
     if heur_rappel.days == 0 and heur_rappel.seconds == 0:
         next_thursday = calculate_next_thursday()
-        execute_script()
+        query_thread()
         time_until_next_thursday = next_thursday - datetime.datetime.now()
         time_remaining_label["text"] = "Prochain compte à rebours avant le prochain envoi (Jeudi suivant) : " + \
                                        str(time_until_next_thursday.days) + " jours, " + \
@@ -55,6 +60,11 @@ def update_time_remaining_label():
                                            60) + " secondes"
 
 
+def query_thread():
+    query = threading.Thread(target=execute_script, args=())
+    query.start()
+
+
 window = tk.Tk()
 window.title("Programme d'envoi de données")
 
@@ -64,7 +74,7 @@ time_remaining_label.pack()
 update_label_periodically()
 
 execute_button = tk.Button(
-    window, text="Exécuter le script", command=execute_script)
+    window, text="Exécuter le script", command=query_thread)
 execute_button.pack()
 
 window.mainloop()
