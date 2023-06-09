@@ -23,6 +23,7 @@ server_default = config.get('DEFAULT', 'SMTP_SERVEUR')
 username_default = config.get('DEFAULT', 'SMTP_USERNAME')
 password_default = config.get('DEFAULT', 'SMTP_PASSWORD')
 port_default = config.get('DEFAULT', 'SMTP_PORT')
+
 recipient = config.get('USER', 'RECIPIENT')
 
 # Informations de connexion
