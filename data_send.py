@@ -1,7 +1,7 @@
 import sqlite3
 
-def data_sent_email():
 
+def data_sent_email():
     conn = sqlite3.connect('./DB_TEST.sqlite3')
     cursor = conn.cursor()
 
@@ -12,10 +12,13 @@ def data_sent_email():
         INNER JOIN Emails ON EmailSociete.id_email = Emails.id
     """)
     rows = cursor.fetchall()
+    print(rows)
 
     for row in rows:
         # Traitez chaque ligne de données ici
         societe_name, email = row
+        print()
+        print("----------------------")
         print("Société:", societe_name)
         print("Email:", email)
         print("----------------------")
