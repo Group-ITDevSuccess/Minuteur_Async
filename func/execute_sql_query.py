@@ -1,6 +1,30 @@
 import pandas as pd
 import pyodbc
 
+import configparser
+
+# Chemin du fichier .env
+env_file = '../.env'
+
+# Créer un objet ConfigParser
+config = configparser.ConfigParser()
+
+# Lire les variables d'environnement à partir du fichier .env
+config.read(env_file)
+
+# Informations de connexion
+server_connexion = config.get('SERVER', 'SERVER_CONNEXION')
+database_connexion = config.get('SERVER', 'DATABASE_CONNEXION')
+username_connexion = config.get('SERVER', 'USER_CONNEXION')
+password_connexion = config.get('SERVER', 'PASS_CONNEXION')
+
+base = {
+    'server': server_connexion,
+    'database': database_connexion,
+    'username': username_connexion,
+    'password': password_connexion
+}
+
 
 def execute_sql_query(base):
     # Chaîne de connexion
@@ -14,11 +38,18 @@ def execute_sql_query(base):
         print('Connected')
 
     query = """
-        SELECT F_ECRITUREC.CT_NUM, CT_INTITULE, 
-        SUM(CASE WHEN EC_SENS=0 THEN EC_MONTANT ELSE -EC_MONTANT END) 
-        AS SUMS FROM F_ECRITUREC INNER JOIN F_COMPTET ON F_ECRITUREC.CT_NUM=F_COMPTET.CT_NUM 
-        GROUP BY F_ECRITUREC.CT_NUM, CT_INTITULE
+        SELECT F_ECRITUREC.CT_NUM,CT_INTITULE,EC_ECHEANCE, CT_TYPE, 
+        (CASE WHEN EC_SENS=0 THEN EC_MONTANT ELSE - EC_MONTANT END), 
+        CG_NUM FROM F_ECRITUREC INNER JOIN F_COMPTET ON 
+        F_ECRITUREC.CT_NUM=F_COMPTET.CT_NUM
+        WHERE EC_LETTRE=0 AND YEAR(JM_DATE)='2023'
     """
+    # query = """
+    #    SELECT F_ECRITUREC.CT_NUM, CT_INTITULE,
+    #    SUM(CASE WHEN EC_SENS=0 THEN EC_MONTANT ELSE -EC_MONTANT END)
+    #    AS SUMS FROM F_ECRITUREC INNER JOIN F_COMPTET ON F_ECRITUREC.CT_NUM=F_COMPTET.CT_NUM
+    #    GROUP BY F_ECRITUREC.CT_NUM, CT_INTITULE
+    # """
 
     with connection.cursor() as cursor:
         cursor.execute(query)
@@ -29,11 +60,16 @@ def execute_sql_query(base):
             rows = [tuple(row) for row in rows]
 
             if all(isinstance(row, tuple) for row in rows):
-                df = pd.DataFrame(rows, columns=["CT_NUM", "CT_INTITULE", "SUMS"])
-                print('Exel save and use')
+                #df = pd.DataFrame(rows, columns=["TYPE", "CODE", "INTITULE", "ECHEANCE", "SOLDE", "COMPTE"])
+                df = pd.DataFrame(rows, columns=["CODE", "INTITULE", "ECHEANCE", "TYPE", "SOLDE", "COMPTE"])
+                print(df)
+                #print(f"Rows: {rows} ")
             else:
                 print("Error format")
 
     connection.close()
 
     return df
+
+
+execute_sql_query(base)
