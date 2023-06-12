@@ -3,6 +3,7 @@ import pyodbc
 
 import configparser
 
+"""
 # Chemin du fichier .env
 env_file = '../.env'
 
@@ -24,6 +25,7 @@ base = {
     'username': username_connexion,
     'password': password_connexion
 }
+"""
 
 
 def execute_sql_query(base):
@@ -38,9 +40,9 @@ def execute_sql_query(base):
         print('Connected')
 
     query = """
-        SELECT F_ECRITUREC.CT_NUM,CT_INTITULE,EC_ECHEANCE, CT_TYPE, 
-        (CASE WHEN EC_SENS=0 THEN EC_MONTANT ELSE - EC_MONTANT END), 
-        CG_NUM FROM F_ECRITUREC INNER JOIN F_COMPTET ON 
+        SELECT CT_TYPE as TYPE, F_ECRITUREC.CT_NUM as CODE,CT_INTITULE as INTITULE,EC_ECHEANCE as ECHEANCE,  
+        (CASE WHEN EC_SENS=0 THEN EC_MONTANT ELSE - EC_MONTANT END) as SOLDE, 
+        CG_NUM as COMPTE FROM F_ECRITUREC INNER JOIN F_COMPTET ON 
         F_ECRITUREC.CT_NUM=F_COMPTET.CT_NUM
         WHERE EC_LETTRE=0 AND YEAR(JM_DATE)='2023'
     """
@@ -60,10 +62,10 @@ def execute_sql_query(base):
             rows = [tuple(row) for row in rows]
 
             if all(isinstance(row, tuple) for row in rows):
-                #df = pd.DataFrame(rows, columns=["TYPE", "CODE", "INTITULE", "ECHEANCE", "SOLDE", "COMPTE"])
-                df = pd.DataFrame(rows, columns=["CODE", "INTITULE", "ECHEANCE", "TYPE", "SOLDE", "COMPTE"])
+                # df = pd.DataFrame(rows, columns=["TYPE", "CODE", "INTITULE", "ECHEANCE", "SOLDE", "COMPTE"])
+                df = pd.DataFrame(rows, columns=["TYPE", "CODE", "INTITULE", "ECHEANCE", "SOLDE", "COMPTE"])
                 print(df)
-                #print(f"Rows: {rows} ")
+                # print(f"Rows: {rows} ")
             else:
                 print("Error format")
 
@@ -71,5 +73,4 @@ def execute_sql_query(base):
 
     return df
 
-
-execute_sql_query(base)
+# execute_sql_query(base)

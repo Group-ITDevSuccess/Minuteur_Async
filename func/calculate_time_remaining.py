@@ -3,8 +3,8 @@ import datetime
 
 def calculate_time_remaining():
     date_heur_actuel = datetime.datetime.now()
-    jours = (4 - date_heur_actuel.weekday() + 7) % 7
-    date_heur_prochaine = date_heur_actuel.replace(hour=11, minute=33, second=0, microsecond=0)
+    jours = (0 - date_heur_actuel.weekday() + 7) % 7
+    date_heur_prochaine = date_heur_actuel.replace(hour=15, minute=35, second=0, microsecond=0)
 
     if date_heur_actuel >= date_heur_prochaine:
         jours += 7
