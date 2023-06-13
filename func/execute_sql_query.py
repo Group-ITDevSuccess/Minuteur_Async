@@ -64,7 +64,7 @@ def execute_sql_query(base):
             if all(isinstance(row, tuple) for row in rows):
                 # df = pd.DataFrame(rows, columns=["TYPE", "CODE", "INTITULE", "ECHEANCE", "SOLDE", "COMPTE"])
                 df = pd.DataFrame(rows, columns=["TYPE", "CODE", "INTITULE", "ECHEANCE", "SOLDE", "COMPTE"])
-                print(df)
+                # print(df)
                 # print(f"Rows: {rows} ")
             else:
                 print("Error format")
