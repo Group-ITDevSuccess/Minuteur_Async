@@ -25,7 +25,6 @@ server_default = config.get('DEFAULT', 'SMTP_SERVEUR')
 username_default = config.get('DEFAULT', 'SMTP_USERNAME')
 password_default = config.get('DEFAULT', 'SMTP_PASSWORD')
 port_default = config.get('DEFAULT', 'SMTP_PORT')
-
 recipient = config.get('USER', 'RECIPIENT')
 
 # Informations de connexion
@@ -50,9 +49,7 @@ base = {
 def execute_script():
     df = execute_sql_query(base)
     filename = export_to_excel(df)
-
     recipients = recipient.split(",")
-
     send_email_with_attachment(filename, recipients, smtp)
     update_time_remaining_label()
 
@@ -68,7 +65,7 @@ def update_time_remaining_label():
         next_thursday = calculate_next_thursday()
         query_thread()
         time_until_next_thursday = next_thursday - datetime.datetime.now()
-        time_remaining_label["text"] = "Prochain compte à rebours avant le prochain envoi (Jeudi suivant) : " + \
+        time_remaining_label["text"] = "Prochain compte à rebours avant le prochain envoi : " + \
                                        str(time_until_next_thursday.days) + " jours, " + \
                                        str(time_until_next_thursday.seconds // 3600) + " heures, " + \
                                        str((time_until_next_thursday.seconds // 60) % 60) + " minutes, " + \
@@ -89,12 +86,9 @@ def query_thread():
 
 window = tk.Tk()
 window.title("Programme d'envoi de données")
-
 time_remaining_label = tk.Label(window, text="")
 time_remaining_label.pack()
-
 update_label_periodically()
-
 execute_button = tk.Button(
     window, text="Exécuter le script", command=query_thread)
 execute_button.pack()
