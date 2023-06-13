@@ -1,15 +1,13 @@
-import datetime
 import tkinter as tk
-import configparser
 import threading
+from datetime import datetime
+import configparser
 
-from data_send import data_sent_email
-
-from func.utils import calculate_next_thursday
-from func.utils import calculate_time_remaining
+from func.utils import calculate_next_thursday, calculate_time_remaining
 from func.execute_query import execute_sql_query
 from func.export_to_excel import export_to_excel
 from func.send_email import send_email_with_attachment
+from data_send import data_sent_email
 
 # Chemin du fichier .env
 env_file = '.env'
@@ -64,7 +62,7 @@ def update_time_remaining_label():
     if heur_rappel.days == 0 and heur_rappel.seconds == 0:
         next_thursday = calculate_next_thursday()
         query_thread()
-        time_until_next_thursday = next_thursday - datetime.datetime.now()
+        time_until_next_thursday = next_thursday - datetime.now()
         time_remaining_label["text"] = "Prochain compte à rebours avant le prochain envoi : " + \
                                        str(time_until_next_thursday.days) + " jours, " + \
                                        str(time_until_next_thursday.seconds // 3600) + " heures, " + \
@@ -84,13 +82,20 @@ def query_thread():
     query.start()
 
 
-window = tk.Tk()
-window.title("Programme d'envoi de données")
-time_remaining_label = tk.Label(window, text="")
-time_remaining_label.pack()
-update_label_periodically()
-execute_button = tk.Button(
-    window, text="Exécuter le script", command=query_thread)
-execute_button.pack()
+if __name__ == "__main__":
+    window = tk.Tk()
+    window.title("Programme d'envoi de données")
 
-window.mainloop()
+    # Création de l'étiquette pour afficher le temps restant
+    time_remaining_label = tk.Label(window, text="")
+    time_remaining_label.pack(pady=10)
+
+    # Mise à jour périodique de l'étiquette du temps restant
+    update_label_periodically()
+
+    # Bouton pour exécuter le script
+    execute_button = tk.Button(window, text="Exécuter le script", command=query_thread)
+    execute_button.pack(pady=10)
+
+    window.mainloop()
+
