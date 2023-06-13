@@ -1,5 +1,11 @@
 import datetime
 
+set_hour = 11
+set_minute = 24
+set_second = 0
+set_microsecond = 0
+set_day = 1
+
 
 def now():
     return datetime.datetime.now()
@@ -7,8 +13,9 @@ def now():
 
 def calculate_time_remaining():
     date_heur_actuel = now()
-    jours = (1 - date_heur_actuel.weekday() + 7) % 7
-    date_heur_prochaine = date_heur_actuel.replace(hour=11, minute=24, second=0, microsecond=0)
+    jours = (set_day - date_heur_actuel.weekday() + 7) % 7
+    date_heur_prochaine = date_heur_actuel.replace(hour=set_hour, minute=set_minute, second=set_second,
+                                                   microsecond=set_microsecond)
 
     if date_heur_actuel >= date_heur_prochaine:
         jours += 7
@@ -21,7 +28,8 @@ def calculate_time_remaining():
 
 def calculate_next_thursday():
     date_heur_actuel = now()
-    jours = (1 - date_heur_actuel.weekday() + 7) % 7
+    jours = (set_day - date_heur_actuel.weekday() + 7) % 7
     date_heur_prochaine = date_heur_actuel + datetime.timedelta(days=jours)
-    date_heur_prochaine = date_heur_prochaine.replace(hour=11, minute=24, second=0, microsecond=0)
+    date_heur_prochaine = date_heur_prochaine.replace(hour=set_hour, minute=set_minute, second=set_second,
+                                                      microsecond=set_microsecond)
     return date_heur_prochaine

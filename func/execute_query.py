@@ -36,10 +36,7 @@ def execute_sql_query(base):
             rows = [tuple(row) for row in rows]
 
             if all(isinstance(row, tuple) for row in rows):
-                # df = pd.DataFrame(rows, columns=["TYPE", "CODE", "INTITULE", "ECHEANCE", "SOLDE", "COMPTE"])
                 df = pd.DataFrame(rows, columns=["TYPE", "CODE", "INTITULE", "ECHEANCE", "SOLDE", "COMPTE"])
-                # print(df)
-                # print(f"Rows: {rows} ")
             else:
                 print("Error format")
 
