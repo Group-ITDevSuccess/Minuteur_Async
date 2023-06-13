@@ -5,11 +5,11 @@ import threading
 
 from data_send import data_sent_email
 
-from func.calculate_next_thursday import calculate_next_thursday
-from func.calculate_time_remaining import calculate_time_remaining
-from func.execute_sql_query import execute_sql_query
+from func.utils import calculate_next_thursday
+from func.utils import calculate_time_remaining
+from func.execute_query import execute_sql_query
 from func.export_to_excel import export_to_excel
-from func.send_email_with_attachment import send_email_with_attachment
+from func.send_email import send_email_with_attachment
 
 # Chemin du fichier .env
 env_file = '.env'
