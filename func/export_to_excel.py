@@ -5,6 +5,7 @@ from openpyxl.styles import Alignment
 from datetime import datetime
 import os
 
+
 def get_age(date_string):
     """Calculates the age in days between a given date and today's date"""
     today = date.today()
@@ -61,6 +62,7 @@ def export_to_excel(df):
         cell.fill = header_fill
         cell.font = header_font
         cell.alignment = Alignment(horizontal="center", vertical="center")
+
 
     # En-têtes pour les fournisseurs
     for col_index, header in enumerate(headers, start=1):
