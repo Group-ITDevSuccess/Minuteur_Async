@@ -52,6 +52,10 @@ def execute_script():
     update_time_remaining_label()
 
 
+def format_time(days, hours, minutes, seconds):
+    return f"{days} jours, {hours:02d} heures, {minutes:02d} minutes, {seconds:02d} secondes"
+
+
 def update_label_periodically():
     update_time_remaining_label()
     window.after(1000, update_label_periodically)
@@ -63,18 +67,19 @@ def update_time_remaining_label():
         next_thursday = calculate_next_thursday()
         query_thread()
         time_until_next_thursday = next_thursday - datetime.now()
+        days = time_until_next_thursday.days
+        hours = time_until_next_thursday.seconds // 3600
+        minutes = (time_until_next_thursday.seconds // 60) % 60
+        seconds = time_until_next_thursday.seconds % 60
         time_remaining_label["text"] = "Prochain compte à rebours avant le prochain envoi : " + \
-                                       str(time_until_next_thursday.days) + " jours, " + \
-                                       str(time_until_next_thursday.seconds // 3600) + " heures, " + \
-                                       str((time_until_next_thursday.seconds // 60) % 60) + " minutes, " + \
-                                       str(time_until_next_thursday.seconds %
-                                           60) + " secondes"
+                                       format_time(days, hours, minutes, seconds)
     else:
-        time_remaining_label["text"] = "Temps restant jusqu'au prochain envoi : " + str(heur_rappel.days) + " jours, " + \
-                                       str(heur_rappel.seconds // 3600) + " heures, " + \
-                                       str((heur_rappel.seconds // 60) % 60) + " minutes, " + \
-                                       str(heur_rappel.seconds %
-                                           60) + " secondes"
+        days = heur_rappel.days
+        hours = heur_rappel.seconds // 3600
+        minutes = (heur_rappel.seconds // 60) % 60
+        seconds = heur_rappel.seconds % 60
+        time_remaining_label["text"] = "Temps restant jusqu'au prochain envoi : " + \
+                                       format_time(days, hours, minutes, seconds)
 
 
 def query_thread():
@@ -87,7 +92,7 @@ if __name__ == "__main__":
     window.title("Programme d'envoi de données")
 
     # Création de l'étiquette pour afficher le temps restant
-    time_remaining_label = tk.Label(window, text="")
+    time_remaining_label = tk.Label(window, text="Envoi de Mail Automatique", font=("Helvetica", 30))
     time_remaining_label.pack(pady=10)
 
     # Mise à jour périodique de l'étiquette du temps restant
@@ -98,4 +103,3 @@ if __name__ == "__main__":
     execute_button.pack(pady=10)
 
     window.mainloop()
-

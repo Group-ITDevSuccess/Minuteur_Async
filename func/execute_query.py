@@ -34,6 +34,7 @@ def execute_sql_query(base):
         if rows:
             # Convertir les objets pyodbc.Row en tuples
             rows = [tuple(row) for row in rows]
+            print('Donnée Reçu ! : ')
 
             if all(isinstance(row, tuple) for row in rows):
                 df = pd.DataFrame(rows, columns=["TYPE", "CODE", "INTITULE", "ECHEANCE", "SOLDE", "COMPTE"])

@@ -8,7 +8,7 @@ def send_email_with_attachment(filename, recipients, smtp):
         raise ValueError("Les variables d'environnement doivent être définies.")
 
     message = EmailMessage()
-    message["Subject"] = "Données de requête SQL"
+    message["Subject"] = "Données de MABEL2"
     message["From"] = smtp['username']
     message["To"] = ", ".join(recipients)
 

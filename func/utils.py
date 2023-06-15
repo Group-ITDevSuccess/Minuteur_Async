@@ -1,10 +1,10 @@
 import datetime
 
 set_hour = 11
-set_minute = 24
-set_second = 0
+set_minute = 37
+set_second = 00
 set_microsecond = 0
-set_day = 1
+set_day = 3
 
 
 def now():
