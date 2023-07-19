@@ -34,14 +34,15 @@ password_connexion = config.get('SERVER', 'PASS_CONNEXION')
 smtp = {'server': server_default,
         'username': username_default,
         'password': password_default,
-        'port': port_default}
+        'port': port_default
+        }
 
 base = {
     'server': server_connexion,
     'database': database_connexion,
     'username': username_connexion,
     'password': password_connexion
-}
+    }
 
 
 def execute_script():

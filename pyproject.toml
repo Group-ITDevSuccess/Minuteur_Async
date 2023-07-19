@@ -9,6 +9,7 @@ packages = [{include = "2 _ minuteur_async"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 pandas = "^2.0.2"
+et-xmlfile = "^1.1.0"
 
 
 [build-system]
