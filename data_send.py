@@ -6,7 +6,7 @@ def data_sent_email():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT Societes.name, Emails.email
+        SELECT Societes.name, Societes.server, Societes.username, Societes.password, Emails.email
         FROM EmailSociete
         INNER JOIN Societes ON EmailSociete.id_societe = Societes.id
         INNER JOIN Emails ON EmailSociete.id_email = Emails.id
@@ -16,10 +16,13 @@ def data_sent_email():
 
     for row in rows:
         # Traitez chaque ligne de données ici
-        societe_name, email = row
+        name, server, username, password, email = row
         print()
         print("----------------------")
-        print("Société:", societe_name)
+        print("Société Name:", name)
+        print("Société Server:", server)
+        print("Société Username:", username)
+        print("Société Password:", password)
         print("Email:", email)
         print("----------------------")
         print()
@@ -28,3 +31,5 @@ def data_sent_email():
     conn.close()
 
     return rows
+
+data_sent_email()

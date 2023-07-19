@@ -1,4 +1,5 @@
 import tkinter as tk
+import sqlite3
 import threading
 from datetime import datetime
 import configparser
@@ -23,13 +24,13 @@ server_default = config.get('DEFAULT', 'SMTP_SERVEUR')
 username_default = config.get('DEFAULT', 'SMTP_USERNAME')
 password_default = config.get('DEFAULT', 'SMTP_PASSWORD')
 port_default = config.get('DEFAULT', 'SMTP_PORT')
-recipient = config.get('USER', 'RECIPIENT')
+# recipient = config.get('USER', 'RECIPIENT')
 
 # Informations de connexion
-server_connexion = config.get('SERVER', 'SERVER_CONNEXION')
-database_connexion = config.get('SERVER', 'DATABASE_CONNEXION')
-username_connexion = config.get('SERVER', 'USER_CONNEXION')
-password_connexion = config.get('SERVER', 'PASS_CONNEXION')
+# server_connexion = config.get('SERVER', 'SERVER_CONNEXION')
+# database_connexion = config.get('SERVER', 'DATABASE_CONNEXION')
+# username_connexion = config.get('SERVER', 'USER_CONNEXION')
+# password_connexion = config.get('SERVER', 'PASS_CONNEXION')
 
 smtp = {'server': server_default,
         'username': username_default,
@@ -37,19 +38,66 @@ smtp = {'server': server_default,
         'port': port_default
         }
 
-base = {
-    'server': server_connexion,
-    'database': database_connexion,
-    'username': username_connexion,
-    'password': password_connexion
-    }
+
+# base = {
+#     'server': server_connexion,
+#     'database': database_connexion,
+#     'username': username_connexion,
+#     'password': password_connexion
+# }
+
+
+def data_sent_email():
+    conn = sqlite3.connect('./DB_TEST.sqlite3')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT Societes.name, Societes.server, Societes.username, Societes.password, Emails.email
+        FROM EmailSociete
+        INNER JOIN Societes ON EmailSociete.id_societe = Societes.id
+        INNER JOIN Emails ON EmailSociete.id_email = Emails.id
+    """)
+    rows = cursor.fetchall()
+    print(rows)
+
+    for row in rows:
+        # Traitez chaque ligne de données ici
+        name, server, username, password, email = row
+        print()
+        print("----------------------")
+        print("Société Name:", name)
+        print("Société Server:", server)
+        print("Société Username:", username)
+        print("Société Password:", password)
+        print("Email:", email)
+        print("----------------------")
+        print()
+
+        base = {
+            'server': server,
+            'database': name,
+            'username': username,
+            'password': password
+        }
+        recipient = email
+
+        df = execute_sql_query(base)
+        filename = export_to_excel(df=df, objet=name)
+        recipients = recipient.split(",")
+        send_email_with_attachment(objet=name, filename=filename, recipients=recipients, smtp=smtp)
+
+    cursor.close()
+    conn.close()
+
+    return rows
 
 
 def execute_script():
-    df = execute_sql_query(base)
-    filename = export_to_excel(df)
-    recipients = recipient.split(",")
-    send_email_with_attachment(filename, recipients, smtp)
+    # df = execute_sql_query(base)
+    # filename = export_to_excel(df)
+    # recipients = recipient.split(",")
+    # send_email_with_attachment(filename, recipients, smtp)
+    data_sent_email()
     update_time_remaining_label()
 
 

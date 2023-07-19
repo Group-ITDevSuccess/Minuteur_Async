@@ -22,7 +22,7 @@ def get_type(type_value):
     return type_mapping.get(type_value, "")
 
 
-def export_to_excel(df):
+def export_to_excel(df, objet):
     # Obtention de la date actuelle
     current_date = datetime.now().strftime("%Y-%m-%d")
     # Créer le répertoire si nécessaire
@@ -213,7 +213,7 @@ def export_to_excel(df):
             sheet.column_dimensions[column_cells[0].column_letter].width = length + 2
 
     # Sauvegarder le fichier Excel
-    filename = f"donnees_{current_date}.xlsx"
+    filename = f"donnees_{objet}_{current_date}.xlsx"
     pathname = f"data/{filename}"
     workbook.save(pathname)
     return pathname

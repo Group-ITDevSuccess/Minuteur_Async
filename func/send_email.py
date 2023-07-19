@@ -2,13 +2,13 @@ import smtplib
 from email.message import EmailMessage
 
 
-def send_email_with_attachment(filename, recipients, smtp):
+def send_email_with_attachment(objet, filename, recipients, smtp):
     # Vérifiez si les variables d'environnement sont définies
     if smtp['username'] is None or smtp['password'] is None or smtp['port'] is None:
         raise ValueError("Les variables d'environnement doivent être définies.")
 
     message = EmailMessage()
-    message["Subject"] = "Données de MABEL2"
+    message["Subject"] = f"Données de {objet}"
     message["From"] = smtp['username']
     message["To"] = ", ".join(recipients)
 
