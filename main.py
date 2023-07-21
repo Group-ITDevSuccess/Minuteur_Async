@@ -168,34 +168,26 @@ def query_thread():
     query.start()
 
 
-# Configuration des styles pour ttk (themed tkinter)
-style = ttk.Style()
-style.theme_use('default')  # Vous pouvez changer le thème ici (aqua, clam, alt, etc.)
-
-# Style du bouton d'exécution
-style.configure('Execute.TButton', font=('Helvetica', 16), padding=10)
-
-# Style de l'étiquette du temps restant
-style.configure('TimeLabel.TLabel', font=('Helvetica', 24), padding=10)
-
-# Style du Treeview
-style.configure('Custom.Treeview.Heading', font=('Helvetica', 14, 'bold'))
-style.configure('Custom.Treeview', font=('Helvetica', 12), rowheight=25)
-
-
 if __name__ == "__main__":
     window = tk.Tk()
     window.title("Programme d'envoi de données")
+    window.geometry("600x400")  # Set a default window size
+
+    # Set a custom style for widgets
+    style = ttk.Style()
+    style.configure('Custom.TLabel', font=('Helvetica', 16), padding=10)
+    style.configure('Custom.TButton', font=('Helvetica', 14), padding=10)
+    style.configure('Custom.Treeview', font=('Helvetica', 12))
 
     # Création de l'étiquette pour afficher le temps restant
-    time_remaining_label = ttk.Label(window, text="Envoi de Mail Automatique", style='TimeLabel.TLabel')
+    time_remaining_label = ttk.Label(window, text="Envoi de Mail Automatique", style='Custom.TLabel')
     time_remaining_label.pack(pady=10)
 
     # Mise à jour périodique de l'étiquette du temps restant
     update_label_periodically()
 
     # Bouton pour exécuter le script
-    execute_button = ttk.Button(window, text="Exécuter le script", command=query_thread, style='Execute.TButton')
+    execute_button = ttk.Button(window, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
 
     # Create a Treeview widget to display the history table
@@ -204,7 +196,7 @@ if __name__ == "__main__":
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
     history_tree.heading("Time", text="Time", anchor=tk.CENTER)
-    history_tree.pack()
+    history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
     # Call the function to update the history table periodically
     update_history_table()
