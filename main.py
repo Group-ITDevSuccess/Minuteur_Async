@@ -199,6 +199,9 @@ if __name__ == "__main__":
     history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
+    # Call the function to update the label and history table periodically
+    update_label_periodically()
+
 
     # Call the function to update the history table periodically
     update_history_table()
