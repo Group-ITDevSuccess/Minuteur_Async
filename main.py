@@ -200,6 +200,30 @@ def relaunch_email(row_data):
     update_history_table()
 
 
+def relaunch_email_by_line():
+    # Récupérer le numéro de ligne saisi dans le champ d'entrée
+    line_number = line_number_entry.get()
+
+    # Vérifier si le numéro de ligne est un entier valide
+    try:
+        line_number = int(line_number)
+    except ValueError:
+        messagebox.showerror("Erreur", "Veuillez saisir un numéro de ligne valide (entier).")
+        return
+
+    # Vérifier si le numéro de ligne est dans la plage valide
+    if line_number < 1 or line_number > len(history_tree.get_children()):
+        messagebox.showerror("Erreur", "Numéro de ligne invalide. Veuillez saisir un numéro de ligne valide.")
+        return
+
+    # Récupérer les données de la ligne correspondante à partir du Treeview
+    row_data = history_tree.item(history_tree.get_children()[line_number - 1])['values']
+
+    # Relancer l'e-mail correspondant avec les données récupérées
+    relaunch_email(row_data)
+
+
+
 def update_label_periodically():
     update_time_remaining_label()
     window.after(1000, update_label_periodically)
@@ -262,6 +286,14 @@ if __name__ == "__main__":
     # Bouton pour exécuter le script
     execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
+
+    # Créer un champ d'entrée pour saisir le numéro de ligne à relancer
+    line_number_entry = ttk.Entry(content_frame, font=('Helvetica', 14))
+    line_number_entry.pack(pady=5)
+
+    # Bouton pour relancer l'e-mail en fonction du numéro de ligne saisi
+    relaunch_button = ttk.Button(content_frame, text="Relancer", command=relaunch_email_by_line, style='Custom.TButton')
+    relaunch_button.pack(pady=5)
 
     # Create a Treeview widget to display the history table
 
