@@ -10,7 +10,7 @@ from func.utils import calculate_next_month_day, calculate_time_remaining
 from func.execute_query import execute_sql_query
 from func.export_to_excel import export_to_excel
 from func.send_email import send_email_with_attachment
-from data_send import data_sent_email
+from data_send import sent_email
 
 # Chemin du fichier .env
 env_file = '.env'
@@ -72,7 +72,7 @@ def update_historique_status(conn, email, name, success):
         print(f"Error updating historique status: {str(e)}")
 
 
-def data_sent_email():
+def sent_email():
     try:
         conn = sqlite3.connect('./DB_TEST.sqlite3')
         cursor = conn.cursor()
@@ -133,7 +133,7 @@ def data_sent_email():
 def execute_script():
     try:
         create_historique_table()
-        data_sent_email()
+        sent_email()
         update_time_remaining_label()
     except Exception as e:
         # You can customize the error message as per your requirement
@@ -163,6 +163,11 @@ def update_history_table():
                 history_tree.insert("", "end", values=row_data[:-1] + ["", relaunch_button])
             else:
                 history_tree.insert("", "end", values=row)
+
+        conn.close()
+    except sqlite3.Error as e:
+        messagebox.showerror("Error",
+                             f"An error occurred while fetching data from the 'historique' table: {str(e)}")
 
         conn.close()
     except sqlite3.Error as e:
@@ -284,22 +289,14 @@ if __name__ == "__main__":
     execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
 
-    # Créer un champ d'entrée pour saisir le numéro de ligne à relancer
-    line_number_entry = ttk.Entry(content_frame, font=('Helvetica', 14))
-    line_number_entry.pack(pady=5)
-
-    # Bouton pour relancer l'e-mail en fonction du numéro de ligne saisi
-    relaunch_button = ttk.Button(content_frame, text="Relancer", command=relaunch_email_by_line, style='Custom.TButton')
-    relaunch_button.pack(pady=5)
-
     # Create a Treeview widget to display the history table
-
-    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Status", "Action"), show="headings", style='Custom.Treeview')
+    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Statut", "Action"), show="headings", style='Custom.Treeview')
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
     history_tree.heading("Time", text="Time", anchor=tk.CENTER)
-    history_tree.heading("Status", text="Status", anchor=tk.CENTER)  # Nouvelle colonne pour l'état d'envoi
+    history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)  # Nouvelle colonne pour l'état d'envoi
+    history_tree.heading("Action", text="Action", anchor=tk.CENTER)  # Nouvelle colonne pour les actions
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
     # Call the function to update the history table periodically
