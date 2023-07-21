@@ -53,6 +53,7 @@ def create_historique_table():
         # Handle the error if the table creation fails
         messagebox.showerror("Error", f"An error occurred while creating the 'historique' table: {str(e)}")
 
+
 def data_sent_email():
     try:
         conn = sqlite3.connect('./DB_TEST.sqlite3')
@@ -138,6 +139,7 @@ def update_history_table():
         messagebox.showerror("Error",
                              f"An error occurred while fetching data from the 'historique' table: {str(e)}")
 
+
 def update_label_periodically():
     update_time_remaining_label()
     window.after(1000, update_label_periodically)
@@ -188,7 +190,8 @@ if __name__ == "__main__":
     content_frame.pack(fill=tk.BOTH, expand=True)
 
     # Create a custom label style with a colored background
-    style.configure('Custom.TLabel.Colored', font=('Helvetica', 20), padding=10, background='#008080', foreground='white')
+    style.configure('Custom.TLabel.Colored', font=('Helvetica', 20), padding=10, background='#008080',
+                    foreground='white')
 
     # Création de l'étiquette pour afficher le temps restant avec un style personnalisé
     time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel.Colored')
