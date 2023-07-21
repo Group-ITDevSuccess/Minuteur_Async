@@ -5,6 +5,7 @@ import tkinter.messagebox as messagebox
 import threading
 from datetime import datetime
 import configparser
+import os
 
 from func.utils import calculate_next_month_day, calculate_time_remaining
 from func.execute_query import execute_sql_query
@@ -144,7 +145,7 @@ def format_time(days, hours, minutes, seconds):
     return f"{days} jours, {hours:02d} heures, {minutes:02d} minutes, {seconds:02d} secondes"
 
 
-def update_history_table():
+def update_history_table(history_tree):
     try:
         conn = sqlite3.connect('./DB_TEST.sqlite3')
         cursor = conn.cursor()
@@ -300,7 +301,7 @@ if __name__ == "__main__":
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
     # Call the function to update the history table periodically
-    update_history_table()
+    update_history_table(history_tree)
 
     # Start the tkinter main loop
     window.mainloop()
