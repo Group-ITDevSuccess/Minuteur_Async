@@ -6,7 +6,6 @@ from email.message import EmailMessage
 
 def send_email_with_attachment(objet, filename, recipients, smtp):
     try:
-
         # Vérifiez si les variables d'environnement sont définies
         if smtp.get('username') is None or smtp.get('password') is None or smtp.get('port') is None:
             raise ValueError("Les variables d'environnement doivent être définies.")
@@ -14,7 +13,7 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
         message = EmailMessage()
         message["Subject"] = f"Données de {objet}"
         message["From"] = smtp.get('username')
-        message["To"] = recipients  # Concaténer les adresses e-mail avec une virgule
+        message["To"] = ", ".join(recipients)  # Concaténer les adresses e-mail avec une virgule
 
         message.set_content("Veuillez trouver ci-joint le fichier Excel contenant les résultats de la requête SQL.")
 
@@ -33,20 +32,16 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
         date = datetime.datetime.now().strftime("%Y-%m-%d")
         time = datetime.datetime.now().time()
 
-        # Vérifier si l'e-mail a été envoyé avec succès et enregistrer l'état d'envoi dans l'historique
-        if recipients in server._rset:
-            status = "Envoyé"
-        else:
-            status = "Non envoyé"
-
-        cursor.execute("""
-            INSERT INTO historique (email, data, date, time, status)
-            VALUES (?, ?, ?, ?, ?)
-        """, (str(recipients), str(objet), str(date), str(time), status))
+        # L'e-mail a été envoyé avec succès, enregistrez l'état d'envoi dans l'historique
+        status = "Envoyé"
+        for recipient in recipients:
+            cursor.execute("""
+                INSERT INTO historique (email, data, date, time, status)
+                VALUES (?, ?, ?, ?, ?)
+            """, (str(recipient), str(objet), str(date), str(time), status))
 
         conn.commit()
         conn.close()
-
 
         print(f"Message sent to {recipients}")
     except Exception as e:
@@ -56,10 +51,12 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
         date = datetime.datetime.now().strftime("%Y-%m-%d")
         time = datetime.datetime.now().time()
 
-        cursor.execute("""
-            INSERT INTO historique (email, data, date, time, status)
-            VALUES (?, ?, ?, ?, ?)
-        """, (str(recipients), str(objet), str(date), str(time), "Non envoyé"))
+        status = "Non envoyé"
+        for recipient in recipients:
+            cursor.execute("""
+                INSERT INTO historique (email, data, date, time, status)
+                VALUES (?, ?, ?, ?, ?)
+            """, (str(recipient), str(objet), str(date), str(time), status))
 
         conn.commit()
         conn.close()
