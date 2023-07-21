@@ -53,11 +53,12 @@ def create_historique_table():
         # Handle the error if the table creation fails
         messagebox.showerror("Error", f"An error occurred while creating the 'historique' table: {str(e)}")
 
+
 def update_historique_status(conn, email, name, success):
     try:
         cursor = conn.cursor()
-        date = datetime.datetime.now().strftime("%Y-%m-%d")
-        time = datetime.datetime.now().time()
+        date = datetime.now().strftime("%Y-%m-%d")
+        time = datetime.now().time()
 
         status = "Envoyé" if success else "Non envoyé"
 
@@ -69,6 +70,7 @@ def update_historique_status(conn, email, name, success):
         conn.commit()
     except Exception as e:
         print(f"Error updating historique status: {str(e)}")
+
 
 def data_sent_email():
     try:
@@ -126,7 +128,6 @@ def data_sent_email():
     except Exception as e:
         # Vous pouvez ajuster le comportement de gestion de l'erreur ici si nécessaire
         messagebox.showerror("Error", f"An error occurred: {str(e)} ")
-
 
 
 def execute_script():
