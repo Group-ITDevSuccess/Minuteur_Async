@@ -196,7 +196,7 @@ if __name__ == "__main__":
     # Create the colored label
     time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel.Colored')
     time_remaining_label.pack(pady=10)
-    
+
     # Bouton pour exécuter le script
     execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
