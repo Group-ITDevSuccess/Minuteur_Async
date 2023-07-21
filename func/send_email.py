@@ -1,4 +1,5 @@
 import smtplib
+import sqlite3
 from email.message import EmailMessage
 
 
@@ -26,9 +27,9 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
     
     conn = sqlite3.connect('./DB_TEST.sqlite3')
     cursor = conn.cursor()
-    cursor.execute('''
+    cursor.execute("""
         INSERT INTO historique (email, data, date, time)
         VALUES (?, ?, ?, ?)
-    ''', (", ".join(recipients), filename, datetime.now().date(), datetime.now().time()))
+    """, (recipients, filename, datetime.now().date(), datetime.now().time()))
     conn.commit()
     conn.close()
