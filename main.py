@@ -182,14 +182,21 @@ if __name__ == "__main__":
     style.configure('Custom.TLabel', font=('Helvetica', 20), padding=10)
     style.configure('Custom.TButton', font=('Helvetica', 16), padding=10)
     style.configure('Custom.Treeview', font=('Helvetica', 12))
+    style.configure('Custom.Treeview.Heading', font=('Helvetica', 14, 'bold'), background='#dcdcdc', foreground='black')
 
-    # Create a frame to organize widgets
-    content_frame = ttk.Frame(window)
-    content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+    # Set custom colors
+    window.configure(background='#f0f0f0')  # Set window background color
 
-    # Création de l'étiquette pour afficher le temps restant avec un style personnalisé
+    content_frame = ttk.Frame(window, padding=20)
+    content_frame.pack(fill=tk.BOTH, expand=True)
+
+    # Create a custom style for the colored label
+    style.configure('Custom.TLabel.Colored', font=('Helvetica', 20), padding=10, background='#008080', foreground='white')
+
+    # Create the colored label
     time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel.Colored')
-
+    time_remaining_label.pack(pady=10)
+    
     # Bouton pour exécuter le script
     execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
