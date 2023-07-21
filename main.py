@@ -43,7 +43,8 @@ def create_historique_table():
                 email TEXT,
                 data TEXT,
                 date DATE,
-                time TIME
+                time TIME,
+                status TEXT
             )
         """)
         conn.commit()
@@ -121,7 +122,7 @@ def update_history_table():
         conn = sqlite3.connect('./DB_TEST.sqlite3')
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT email, data, date, time FROM historique
+            SELECT email, data, date, time, status FROM historique
         """)
         rows = cursor.fetchall()
 
@@ -134,6 +135,12 @@ def update_history_table():
     except sqlite3.Error as e:
         messagebox.showerror("Error",
                              f"An error occurred while fetching data from the 'historique' table: {str(e)}")
+
+
+def update_label_periodically():
+    update_time_remaining_label()
+    window.after(1000, update_label_periodically)
+    window.after(2000, update_history_table)  # Update every 1 seconds
 
 
 def update_time_remaining_label():
@@ -194,12 +201,14 @@ if __name__ == "__main__":
     execute_button.pack(pady=10)
 
     # Create a Treeview widget to display the history table
-    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time"), show="headings",
+
+    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Statut"), show="headings",
                                 style='Custom.Treeview')
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
     history_tree.heading("Time", text="Time", anchor=tk.CENTER)
+    history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
     # Call the function to update the history table periodically
