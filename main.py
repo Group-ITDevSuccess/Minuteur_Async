@@ -1,9 +1,11 @@
-import tkinter as tk
-import  tkinter.messagebox as messagebox
 import sqlite3
+import tkinter as tk
+import tkinter.ttk as ttk
+import tkinter.messagebox as messagebox
 import threading
 from datetime import datetime
 import configparser
+
 
 from func.utils import calculate_next_month_day, calculate_time_remaining
 from func.execute_query import execute_sql_query
@@ -31,6 +33,25 @@ smtp = {'server': server_default,
         'password': password_default,
         'port': port_default
         }
+
+def create_historique_table():
+    try:
+        conn = sqlite3.connect('./DB_TEST.sqlite3')
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS historique (
+                email TEXT,
+                data TEXT,
+                date DATE,
+                time TIME
+            )
+        """)
+        conn.commit()
+        conn.close()
+    except sqlite3.Error as e:
+        # Handle the error if the table creation fails
+        messagebox.showerror("Error", f"An error occurred while creating the 'historique' table: {str(e)}")
+
 
 
 def data_sent_email():
@@ -80,11 +101,11 @@ def data_sent_email():
 
     except Exception as e:
         # You can customize the error message as per your requirement
-        messagebox.showerror("Error", f"An error occured : {str(e)} ")
-
+        messagebox.showerror("Error", f"An error occurred: {str(e)} ")
 
 def execute_script():
     try:
+        create_historique_table()
         data_sent_email()
         update_time_remaining_label()
     except Exception as e:
@@ -141,5 +162,38 @@ if __name__ == "__main__":
     # Bouton pour exécuter le script
     execute_button = tk.Button(window, text="Exécuter le script", command=query_thread)
     execute_button.pack(pady=10)
+
+    # Create a Treeview widget to display the history table
+    history_tree = ttk.Treeview(window, columns=("Email", "Data", "Date", "Time"), show="headings")
+    history_tree.heading("Email", text="Email")
+    history_tree.heading("Data", text="Data")
+    history_tree.heading("Date", text="Date")
+    history_tree.heading("Time", text="Time")
+    history_tree.pack()
+
+    def update_history_table():
+        try:
+            conn = sqlite3.connect('./DB_TEST.sqlite3')
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT email, data, date, time FROM historique
+            """)
+            rows = cursor.fetchall()
+
+            history_tree.delete(*history_tree.get_children())
+
+            for row in rows:
+                history_tree.insert("", "end", values=row)
+
+            conn.close()
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", f"An error occurred while fetching data from the 'historique' table: {str(e)}")
+
+    # Call create_historique_table() to ensure the table exists
+    create_historique_table()
+
+    # Call the function to update the history table periodically
+    update_history_table()
+    window.after(5000, update_history_table)  # Update every 5 seconds
 
     window.mainloop()
