@@ -34,11 +34,12 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
 
         # L'e-mail a été envoyé avec succès, enregistrez l'état d'envoi dans l'historique
         status = "Envoyé"
-        for recipient in recipients:
-            cursor.execute("""
-                INSERT INTO historique (email, data, date, time, status)
-                VALUES (?, ?, ?, ?, ?)
-            """, (str(recipient), str(objet), str(date), str(time), status))
+        recipients_data = [(recipient, objet, date, time, status) for recipient in recipients]
+
+        cursor.executemany("""
+            INSERT INTO historique (email, data, date, time, status)
+            VALUES (?, ?, ?, ?, ?)
+        """, recipients_data)
 
         conn.commit()
         conn.close()
@@ -52,11 +53,12 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
         time = datetime.datetime.now().time()
 
         status = "Non envoyé"
-        for recipient in recipients:
-            cursor.execute("""
-                INSERT INTO historique (email, data, date, time, status)
-                VALUES (?, ?, ?, ?, ?)
-            """, (str(recipient), str(objet), str(date), str(time), status))
+        recipients_data = [(recipient, objet, date, time, status) for recipient in recipients]
+
+        cursor.executemany("""
+            INSERT INTO historique (email, data, date, time, status)
+            VALUES (?, ?, ?, ?, ?)
+        """, recipients_data)
 
         conn.commit()
         conn.close()
