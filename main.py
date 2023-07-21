@@ -184,11 +184,12 @@ if __name__ == "__main__":
 
     # Set custom colors
     window.configure(background='#f0f0f0')  # Set window background color
-    content_frame = ttk.Frame(window, padding=20)
-    content_frame.pack(fill=tk.BOTH, expand=True)
 
     # Create a custom label style with a colored background
     style.configure('Custom.TLabel.Colored', font=('Helvetica', 20), padding=10, background='#008080', foreground='white')
+
+    content_frame = ttk.Frame(window, padding=20)
+    content_frame.pack(fill=tk.BOTH, expand=True)
 
     # Création de l'étiquette pour afficher le temps restant avec un style personnalisé
     time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel.Colored')
