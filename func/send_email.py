@@ -28,20 +28,25 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
             server.send_message(message)
             print(f"Message sent to {recipients}")
 
-        # Connexion à la base de données
         conn = sqlite3.connect('./DB_TEST.sqlite3')
         cursor = conn.cursor()
         date = datetime.datetime.now().strftime("%Y-%m-%d")
         time = datetime.datetime.now().time()
 
-        # Enregistrement du statut de l'envoi dans la table de l'historique
+        # Vérifier si l'e-mail a été envoyé avec succès et enregistrer l'état d'envoi dans l'historique
+        if recipients in server._rset:
+            status = "Envoyé"
+        else:
+            status = "Non envoyé"
+
         cursor.execute("""
             INSERT INTO historique (email, data, date, time, status)
             VALUES (?, ?, ?, ?, ?)
-        """, (str(recipients), str(objet), str(date), str(time), "Envoyé"))
+        """, (str(recipients), str(objet), str(date), str(time), status))
 
         conn.commit()
         conn.close()
+
 
         print(f"Message sent to {recipients}")
     except Exception as e:
