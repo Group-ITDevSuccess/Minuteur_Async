@@ -121,8 +121,11 @@ def update_history_table():
     try:
         conn = sqlite3.connect('./DB_TEST.sqlite3')
         cursor = conn.cursor()
+
+        # Fetch data from the 'historique' table in descending order based on 'date' and 'time'
         cursor.execute("""
             SELECT email, data, date, time, status FROM historique
+            ORDER BY date DESC, time DESC
         """)
         rows = cursor.fetchall()
 
