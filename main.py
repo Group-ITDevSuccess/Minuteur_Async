@@ -53,6 +53,7 @@ def create_historique_table():
         # Handle the error if the table creation fails
         messagebox.showerror("Error", f"An error occurred while creating the 'historique' table: {str(e)}")
 
+
 def data_sent_email():
     try:
         conn = sqlite3.connect('./DB_TEST.sqlite3')
@@ -135,6 +136,7 @@ def update_history_table():
         messagebox.showerror("Error",
                              f"An error occurred while fetching data from the 'historique' table: {str(e)}")
 
+
 def update_label_periodically():
     update_time_remaining_label()
     window.after(1000, update_label_periodically)
@@ -191,7 +193,8 @@ if __name__ == "__main__":
     execute_button.pack(pady=10)
 
     # Create a Treeview widget to display the history table
-    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Statut"), show="headings", style='Custom.Treeview')
+    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Statut"), show="headings",
+                                style='Custom.Treeview')
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
@@ -201,7 +204,6 @@ if __name__ == "__main__":
 
     # Call the function to update the label and history table periodically
     update_label_periodically()
-
 
     # Call the function to update the history table periodically
     update_history_table()
