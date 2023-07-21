@@ -13,7 +13,7 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
         message = EmailMessage()
         message["Subject"] = f"Données de {objet}"
         message["From"] = smtp.get('username')
-        message["To"] = ", ".join(recipients)  # Concaténer les adresses e-mail avec une virgule
+        message["To"] = recipients # Concaténer les adresses e-mail avec une virgule
 
         message.set_content("Veuillez trouver ci-joint le fichier Excel contenant les résultats de la requête SQL.")
 
