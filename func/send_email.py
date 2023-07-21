@@ -23,3 +23,12 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
         server.login(smtp['username'], smtp['password'])
         server.send_message(message)
         print(f"Message sent to {', '.join(recipients)}")
+    
+    conn = sqlite3.connect('./DB_TEST.sqlite3')
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO historique (email, data, date, time)
+        VALUES (?, ?, ?, ?)
+    ''', (", ".join(recipients), filename, datetime.now().date(), datetime.now().time()))
+    conn.commit()
+    conn.close()
