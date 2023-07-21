@@ -170,6 +170,12 @@ def query_thread():
     query.start()
 
 
+class ColoredLabel(ttk.Label):
+    def __init__(self, parent, text, background, foreground, font, padding):
+        super().__init__(parent, text=text)
+        self.configure(background=background, foreground=foreground, font=font, padding=padding)
+
+
 if __name__ == "__main__":
     window = tk.Tk()
     window.title("Programme d'envoi de données")
@@ -185,14 +191,12 @@ if __name__ == "__main__":
     # Set custom colors
     window.configure(background='#f0f0f0')  # Set window background color
 
-    # Create a custom label style with a colored background
-    style.configure('Custom.TLabel.Colored', font=('Helvetica', 20), padding=10, background='#008080', foreground='white')
-
     content_frame = ttk.Frame(window, padding=20)
     content_frame.pack(fill=tk.BOTH, expand=True)
 
-    # Création de l'étiquette pour afficher le temps restant avec un style personnalisé
-    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel.Colored')
+    # Create the custom colored label
+    time_remaining_label = ColoredLabel(content_frame, text="Envoi de Mail Automatique", background='#008080',
+                                       foreground='white', font=('Helvetica', 20), padding=10)
     time_remaining_label.pack(pady=10)
 
     # Bouton pour exécuter le script avec un style personnalisé
