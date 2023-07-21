@@ -199,9 +199,9 @@ if __name__ == "__main__":
     execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
 
-    # Create a Treeview widget to display the history table
+    # Create a Treeview widget to display the history table with the custom style
     history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Statut"),
-                                show="headings", style='Custom.Treeview')
+                                show="headings", style='Custom.Treeview')  # Specify the custom style here
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
