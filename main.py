@@ -53,6 +53,22 @@ def create_historique_table():
         # Handle the error if the table creation fails
         messagebox.showerror("Error", f"An error occurred while creating the 'historique' table: {str(e)}")
 
+def update_historique_status(conn, email, name, success):
+    try:
+        cursor = conn.cursor()
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
+        time = datetime.datetime.now().time()
+
+        status = "Envoyé" if success else "Non envoyé"
+
+        cursor.execute("""
+            INSERT INTO historique (email, data, date, time, status)
+            VALUES (?, ?, ?, ?, ?)
+        """, (str(email), str(name), str(date), str(time), status))
+
+        conn.commit()
+    except Exception as e:
+        print(f"Error updating historique status: {str(e)}")
 
 def data_sent_email():
     try:
@@ -69,29 +85,38 @@ def data_sent_email():
         print(rows)
 
         for row in rows:
-            # Traitez chaque ligne de données ici
-            name, server, username, password, email = row
-            print()
-            print("----------------------")
-            print("Société Name:", name)
-            print("Société Server:", server)
-            print("Société Username:", username)
-            print("Société Password:", password)
-            print("Email:", email)
-            print("----------------------")
-            print()
+            try:
+                # Traitez chaque ligne de données ici
+                name, server, username, password, email = row
+                print()
+                print("----------------------")
+                print("Société Name:", name)
+                print("Société Server:", server)
+                print("Société Username:", username)
+                print("Société Password:", password)
+                print("Email:", email)
+                print("----------------------")
+                print()
 
-            base = {
-                'server': server,
-                'database': name,
-                'username': username,
-                'password': password
-            }
-            recipient = email
+                base = {
+                    'server': server,
+                    'database': name,
+                    'username': username,
+                    'password': password
+                }
+                recipient = email
 
-            df = execute_sql_query(base)
-            filename = export_to_excel(df=df, objet=name)
-            send_email_with_attachment(objet=name, filename=filename, recipients=recipient, smtp=smtp)
+                df = execute_sql_query(base)
+                filename = export_to_excel(df=df, objet=name)
+                send_email_with_attachment(objet=name, filename=filename, recipients=recipient, smtp=smtp)
+
+                # Mettez à jour l'historique ici pour marquer cet e-mail comme envoyé
+                update_historique_status(conn, email, name, True)
+
+            except Exception as e:
+                # En cas d'erreur d'envoi, enregistrez le statut "Non envoyé" dans l'historique
+                update_historique_status(conn, email, name, False)
+                print(f"Error sending email to {email}: {str(e)}")
 
         cursor.close()
         conn.close()
@@ -99,8 +124,9 @@ def data_sent_email():
         return rows
 
     except Exception as e:
-        # You can customize the error message as per your requirement
+        # Vous pouvez ajuster le comportement de gestion de l'erreur ici si nécessaire
         messagebox.showerror("Error", f"An error occurred: {str(e)} ")
+
 
 
 def execute_script():
