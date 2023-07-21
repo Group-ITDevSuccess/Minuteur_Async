@@ -35,57 +35,65 @@ smtp = {'server': server_default,
 
 
 def data_sent_email():
-    conn = sqlite3.connect('./DB_TEST.sqlite3')
-    cursor = conn.cursor()
+    try:
+        conn = sqlite3.connect('./DB_TEST.sqlite3')
+        cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT Societes.name, Societes.server, Societes.username, Societes.password, Emails.email
-        FROM EmailSociete
-        INNER JOIN Societes ON EmailSociete.id_societe = Societes.id
-        INNER JOIN Emails ON EmailSociete.id_email = Emails.id
-    """)
-    rows = cursor.fetchall()
-    print(rows)
+        cursor.execute("""
+            SELECT Societes.name, Societes.server, Societes.username, Societes.password, Emails.email
+            FROM EmailSociete
+            INNER JOIN Societes ON EmailSociete.id_societe = Societes.id
+            INNER JOIN Emails ON EmailSociete.id_email = Emails.id
+        """)
+        rows = cursor.fetchall()
+        print(rows)
 
-    for row in rows:
-        # Traitez chaque ligne de données ici
-        name, server, username, password, email = row
-        print()
-        print("----------------------")
-        print("Société Name:", name)
-        print("Société Server:", server)
-        print("Société Username:", username)
-        print("Société Password:", password)
-        print("Email:", email)
-        print("----------------------")
-        print()
+        for row in rows:
+            # Traitez chaque ligne de données ici
+            name, server, username, password, email = row
+            print()
+            print("----------------------")
+            print("Société Name:", name)
+            print("Société Server:", server)
+            print("Société Username:", username)
+            print("Société Password:", password)
+            print("Email:", email)
+            print("----------------------")
+            print()
 
-        base = {
-            'server': server,
-            'database': name,
-            'username': username,
-            'password': password
-        }
-        recipient = email
+            base = {
+                'server': server,
+                'database': name,
+                'username': username,
+                'password': password
+            }
+            recipient = email
 
-        df = execute_sql_query(base)
-        filename = export_to_excel(df=df, objet=name)
-        recipients = recipient.split(",")
-        send_email_with_attachment(objet=name, filename=filename, recipients=recipients, smtp=smtp)
+            df = execute_sql_query(base)
+            filename = export_to_excel(df=df, objet=name)
+            recipients = recipient.split(",")
+            send_email_with_attachment(objet=name, filename=filename, recipients=recipients, smtp=smtp)
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
 
-    return rows
+        return rows
+        
+    except Exception as e:
+        # You can customize the error message as per your requirement
+        error_message = f"An error occurred: {str(e)}"
+        time_remaining_label["text"] = error_message
 
 
 def execute_script():
-    # df = execute_sql_query(base)
-    # filename = export_to_excel(df)
-    # recipients = recipient.split(",")
-    # send_email_with_attachment(filename, recipients, smtp)
-    data_sent_email()
-    update_time_remaining_label()
+    try:
+        data_sent_email()
+        update_time_remaining_label()
+    except Exception as e:
+        # You can customize the error message as per your requirement
+        error_message = f"An error occurred: {str(e)}"
+        time_remaining_label["text"] = error_message
+
 
 
 def format_time(days, hours, minutes, seconds):
