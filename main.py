@@ -170,12 +170,6 @@ def query_thread():
     query.start()
 
 
-class ColoredLabel(ttk.Label):
-    def __init__(self, parent, text, background, foreground, font, padding):
-        super().__init__(parent, text=text)
-        self.configure(background=background, foreground=foreground, font=font, padding=padding)
-
-
 if __name__ == "__main__":
     window = tk.Tk()
     window.title("Programme d'envoi de données")
@@ -186,26 +180,21 @@ if __name__ == "__main__":
     style.configure('Custom.TLabel', font=('Helvetica', 20), padding=10)
     style.configure('Custom.TButton', font=('Helvetica', 16), padding=10)
     style.configure('Custom.Treeview', font=('Helvetica', 12))
-    style.configure('Custom.Treeview.Heading', font=('Helvetica', 14, 'bold'), background='#dcdcdc', foreground='black')
 
-    # Set custom colors
-    window.configure(background='#f0f0f0')  # Set window background color
+    # Create a frame to organize widgets
+    content_frame = ttk.Frame(window)
+    content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-    content_frame = ttk.Frame(window, padding=20)
-    content_frame.pack(fill=tk.BOTH, expand=True)
-
-    # Create the custom colored label
-    time_remaining_label = ColoredLabel(content_frame, text="Envoi de Mail Automatique", background='#008080',
-                                       foreground='white', font=('Helvetica', 20), padding=10)
+    # Création de l'étiquette pour afficher le temps restant
+    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel')
     time_remaining_label.pack(pady=10)
 
-    # Bouton pour exécuter le script avec un style personnalisé
+    # Bouton pour exécuter le script
     execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
 
-    # Create a Treeview widget to display the history table with the custom style
-    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Statut"),
-                                show="headings", style='Custom.Treeview')  # Specify the custom style here
+    # Create a Treeview widget to display the history table
+    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Statut"), show="headings", style='Custom.Treeview')
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
@@ -215,6 +204,7 @@ if __name__ == "__main__":
 
     # Call the function to update the label and history table periodically
     update_label_periodically()
+
 
     # Call the function to update the history table periodically
     update_history_table()
