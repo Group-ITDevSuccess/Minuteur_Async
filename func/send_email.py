@@ -6,6 +6,7 @@ from email.message import EmailMessage
 
 def send_email_with_attachment(objet, filename, recipients, smtp):
     try:
+
         # Vérifiez si les variables d'environnement sont définies
         if smtp.get('username') is None or smtp.get('password') is None or smtp.get('port') is None:
             raise ValueError("Les variables d'environnement doivent être définies.")
@@ -13,7 +14,7 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
         message = EmailMessage()
         message["Subject"] = f"Données de {objet}"
         message["From"] = smtp.get('username')
-        message["To"] = ", ".join(recipients)  # Concaténer les adresses e-mail avec une virgule
+        message["To"] = recipients  # Concaténer les adresses e-mail avec une virgule
 
         message.set_content("Veuillez trouver ci-joint le fichier Excel contenant les résultats de la requête SQL.")
 
@@ -27,19 +28,17 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
             server.send_message(message)
             print(f"Message sent to {recipients}")
 
+        # Connexion à la base de données
         conn = sqlite3.connect('./DB_TEST.sqlite3')
         cursor = conn.cursor()
         date = datetime.datetime.now().strftime("%Y-%m-%d")
         time = datetime.datetime.now().time()
 
-        # L'e-mail a été envoyé avec succès, enregistrez l'état d'envoi dans l'historique
-        status = "Envoyé"
-        recipients_data = [(recipient, objet, date, time, status) for recipient in recipients]
-
-        cursor.executemany("""
+        # Enregistrement du statut de l'envoi dans la table de l'historique
+        cursor.execute("""
             INSERT INTO historique (email, data, date, time, status)
             VALUES (?, ?, ?, ?, ?)
-        """, recipients_data)
+        """, (str(recipients), str(objet), str(date), str(time), "Envoyé"))
 
         conn.commit()
         conn.close()
@@ -52,13 +51,10 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
         date = datetime.datetime.now().strftime("%Y-%m-%d")
         time = datetime.datetime.now().time()
 
-        status = "Non envoyé"
-        recipients_data = [(recipient, objet, date, time, status) for recipient in recipients]
-
-        cursor.executemany("""
+        cursor.execute("""
             INSERT INTO historique (email, data, date, time, status)
             VALUES (?, ?, ?, ?, ?)
-        """, recipients_data)
+        """, (str(recipients), str(objet), str(date), str(time), "Non envoyé"))
 
         conn.commit()
         conn.close()

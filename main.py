@@ -5,13 +5,12 @@ import tkinter.messagebox as messagebox
 import threading
 from datetime import datetime
 import configparser
-import os
 
 from func.utils import calculate_next_month_day, calculate_time_remaining
 from func.execute_query import execute_sql_query
 from func.export_to_excel import export_to_excel
 from func.send_email import send_email_with_attachment
-from data_send import sent_email
+from data_send import data_sent_email
 
 # Chemin du fichier .env
 env_file = '.env'
@@ -54,26 +53,7 @@ def create_historique_table():
         # Handle the error if the table creation fails
         messagebox.showerror("Error", f"An error occurred while creating the 'historique' table: {str(e)}")
 
-
-def update_historique_status(conn, email, name, success):
-    try:
-        cursor = conn.cursor()
-        date = datetime.now().strftime("%Y-%m-%d")
-        time = datetime.now().time()
-
-        status = "Envoyé" if success else "Non envoyé"
-
-        cursor.execute("""
-            INSERT INTO historique (email, data, date, time, status)
-            VALUES (?, ?, ?, ?, ?)
-        """, (str(email), str(name), str(date), str(time), status))
-
-        conn.commit()
-    except Exception as e:
-        print(f"Error updating historique status: {str(e)}")
-
-
-def sent_email():
+def data_sent_email():
     try:
         conn = sqlite3.connect('./DB_TEST.sqlite3')
         cursor = conn.cursor()
@@ -88,38 +68,29 @@ def sent_email():
         print(rows)
 
         for row in rows:
-            try:
-                # Traitez chaque ligne de données ici
-                name, server, username, password, email = row
-                print()
-                print("----------------------")
-                print("Société Name:", name)
-                print("Société Server:", server)
-                print("Société Username:", username)
-                print("Société Password:", password)
-                print("Email:", email)
-                print("----------------------")
-                print()
+            # Traitez chaque ligne de données ici
+            name, server, username, password, email = row
+            print()
+            print("----------------------")
+            print("Société Name:", name)
+            print("Société Server:", server)
+            print("Société Username:", username)
+            print("Société Password:", password)
+            print("Email:", email)
+            print("----------------------")
+            print()
 
-                base = {
-                    'server': server,
-                    'database': name,
-                    'username': username,
-                    'password': password
-                }
-                recipient = email
+            base = {
+                'server': server,
+                'database': name,
+                'username': username,
+                'password': password
+            }
+            recipient = email
 
-                df = execute_sql_query(base)
-                filename = export_to_excel(df=df, objet=name)
-                send_email_with_attachment(objet=name, filename=filename, recipients=recipient, smtp=smtp)
-
-                # Mettez à jour l'historique ici pour marquer cet e-mail comme envoyé
-                update_historique_status(conn, email, name, True)
-
-            except Exception as e:
-                # En cas d'erreur d'envoi, enregistrez le statut "Non envoyé" dans l'historique
-                update_historique_status(conn, email, name, False)
-                print(f"Error sending email to {email}: {str(e)}")
+            df = execute_sql_query(base)
+            filename = export_to_excel(df=df, objet=name)
+            send_email_with_attachment(objet=name, filename=filename, recipients=recipient, smtp=smtp)
 
         cursor.close()
         conn.close()
@@ -127,14 +98,14 @@ def sent_email():
         return rows
 
     except Exception as e:
-        # Vous pouvez ajuster le comportement de gestion de l'erreur ici si nécessaire
+        # You can customize the error message as per your requirement
         messagebox.showerror("Error", f"An error occurred: {str(e)} ")
 
 
 def execute_script():
     try:
         create_historique_table()
-        sent_email()
+        data_sent_email()
         update_time_remaining_label()
     except Exception as e:
         # You can customize the error message as per your requirement
@@ -164,16 +135,10 @@ def update_history_table():
         messagebox.showerror("Error",
                              f"An error occurred while fetching data from the 'historique' table: {str(e)}")
 
-        conn.close()
-    except sqlite3.Error as e:
-        messagebox.showerror("Error",
-                             f"An error occurred while fetching data from the 'historique' table: {str(e)}")
-
-
 def update_label_periodically():
     update_time_remaining_label()
     window.after(1000, update_label_periodically)
-    window.after(1500, update_history_table)  # Update every 1.5 seconds
+    window.after(2000, update_history_table)  # Update every 1 seconds
 
 
 def update_time_remaining_label():
@@ -221,8 +186,6 @@ if __name__ == "__main__":
     time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel')
     time_remaining_label.pack(pady=10)
 
-    update_label_periodically()
-
     # Bouton pour exécuter le script
     execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
@@ -233,8 +196,9 @@ if __name__ == "__main__":
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
     history_tree.heading("Time", text="Time", anchor=tk.CENTER)
-    history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)  # Nouvelle colonne pour l'état d'envoi
+    history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
 
     # Call the function to update the history table periodically
     update_history_table()
