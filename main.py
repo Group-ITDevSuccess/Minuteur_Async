@@ -160,7 +160,8 @@ def update_history_table():
             status = row[-1]
             if status == "Non envoyé":
                 row_data = list(row)
-                relaunch_button = ttk.Button(history_tree, text="Relancer", command=lambda r=row_data: relaunch_email(r))
+                relaunch_button = ttk.Button(history_tree, text="Relancer",
+                                             command=lambda r=row_data: relaunch_email(r))
                 history_tree.insert("", "end", values=row_data[:-1] + [relaunch_button])
             else:
                 history_tree.insert("", "end", values=row)
@@ -170,14 +171,27 @@ def update_history_table():
         messagebox.showerror("Error",
                              f"An error occurred while fetching data from the 'historique' table: {str(e)}")
 
+
 def relaunch_email(row_data):
     email, objet = row_data[:2]
-    base = {
-        'server': server,
-        'database': objet,
-        'username': username,
-        'password': password
-    }
+    conn = sqlite3.connect('./DB_TEST.sqlite3')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+                SELECT Societes.name
+                FROM Societe
+            """)
+    rows = cursor.fetchall()
+    print(rows)
+    base = {}
+    for row in rows:
+        name, server, username, password = row
+        base = {
+            'server': server,
+            'database': objet,
+            'username': username,
+            'password': password
+        }
     recipient = email
 
     df = execute_sql_query(base)
@@ -251,14 +265,14 @@ if __name__ == "__main__":
 
     # Create a Treeview widget to display the history table
 
-    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Status"), show="headings", style='Custom.Treeview')
+    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Status"), show="headings",
+                                style='Custom.Treeview')
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
     history_tree.heading("Time", text="Time", anchor=tk.CENTER)
     history_tree.heading("Status", text="Status", anchor=tk.CENTER)  # Nouvelle colonne pour l'état d'envoi
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-
 
     # Call the function to update the history table periodically
     update_history_table()
