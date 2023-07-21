@@ -24,13 +24,6 @@ server_default = config.get('DEFAULT', 'SMTP_SERVEUR')
 username_default = config.get('DEFAULT', 'SMTP_USERNAME')
 password_default = config.get('DEFAULT', 'SMTP_PASSWORD')
 port_default = config.get('DEFAULT', 'SMTP_PORT')
-# recipient = config.get('USER', 'RECIPIENT')
-
-# Informations de connexion
-# server_connexion = config.get('SERVER', 'SERVER_CONNEXION')
-# database_connexion = config.get('SERVER', 'DATABASE_CONNEXION')
-# username_connexion = config.get('SERVER', 'USER_CONNEXION')
-# password_connexion = config.get('SERVER', 'PASS_CONNEXION')
 
 smtp = {'server': server_default,
         'username': username_default,
@@ -39,12 +32,6 @@ smtp = {'server': server_default,
         }
 
 
-# base = {
-#     'server': server_connexion,
-#     'database': database_connexion,
-#     'username': username_connexion,
-#     'password': password_connexion
-# }
 
 
 def data_sent_email():
