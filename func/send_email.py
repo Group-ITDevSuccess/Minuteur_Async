@@ -28,7 +28,7 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
 
     conn = sqlite3.connect('./DB_TEST.sqlite3')
     cursor = conn.cursor()
-    date = datetime.datetime.now().date()
+    date = date = datetime.datetime.now().strftime("%Y-%m-%d")
     time = datetime.datetime.now().time()
     cursor.execute("""
         INSERT INTO historique (email, data, date, time)
