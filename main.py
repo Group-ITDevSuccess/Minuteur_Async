@@ -155,13 +155,11 @@ def update_history_table():
 
         history_tree.delete(*history_tree.get_children())
 
-        for index, row in enumerate(rows):
-            # Ajouter un bouton "Relancer" pour les e-mails non envoyés
+        for row in rows:
             status = row[-1]
             if status == "Non envoyé":
                 row_data = list(row)
-                relaunch_button = ttk.Button(content_frame, text="Relancer",
-                                             command=lambda r=row_data: relaunch_email(r))
+                relaunch_button = ttk.Button(content_frame, text="Relancer", command=lambda r=row_data: relaunch_email(r))
                 history_tree.insert("", "end", values=row_data[:-1] + ["", relaunch_button])
             else:
                 history_tree.insert("", "end", values=row)
@@ -296,8 +294,7 @@ if __name__ == "__main__":
 
     # Create a Treeview widget to display the history table
 
-    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Status", "Relancer"),
-                            show="headings", style='Custom.Treeview')
+    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Status", "Action"), show="headings", style='Custom.Treeview')
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
