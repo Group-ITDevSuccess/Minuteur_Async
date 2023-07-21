@@ -1,4 +1,5 @@
 import tkinter as tk
+import  tkinter.messagebox as messagebox
 import sqlite3
 import threading
 from datetime import datetime
@@ -30,8 +31,6 @@ smtp = {'server': server_default,
         'password': password_default,
         'port': port_default
         }
-
-
 
 
 def data_sent_email():
@@ -78,11 +77,10 @@ def data_sent_email():
         conn.close()
 
         return rows
-        
+
     except Exception as e:
         # You can customize the error message as per your requirement
-        error_message = f"An error occurred: {str(e)}"
-        time_remaining_label["text"] = error_message
+        messagebox.showerror("Error", f"An error occured : {str(e)} ")
 
 
 def execute_script():
@@ -91,9 +89,7 @@ def execute_script():
         update_time_remaining_label()
     except Exception as e:
         # You can customize the error message as per your requirement
-        error_message = f"An error occurred: {str(e)}"
-        time_remaining_label["text"] = error_message
-
+        messagebox.showerror("Error", f"An error occured : {str(e)} ")
 
 
 def format_time(days, hours, minutes, seconds):
@@ -103,7 +99,6 @@ def format_time(days, hours, minutes, seconds):
 def update_label_periodically():
     update_time_remaining_label()
     window.after(1000, update_label_periodically)
-
 
 
 def update_time_remaining_label():

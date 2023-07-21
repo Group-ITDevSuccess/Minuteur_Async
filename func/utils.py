@@ -21,7 +21,6 @@ def calculate_time_remaining():
     year_actuel = date_heur_actuel.year
     mois_actuel = date_heur_actuel.month
     jour_dans_mois_actuel = get_days_in_month(year_actuel, mois_actuel)
-    print(f"Jours dans ce mois : {jour_dans_mois_actuel}")
     date_heur_prochaine = date_heur_actuel.replace(day=set_day, hour=set_hour, minute=set_minute,
                                                    second=set_second, microsecond=set_microsecond)
 
@@ -48,7 +47,6 @@ def calculate_next_month_day():
     year_actuel = date_heur_actuel.year
     mois_actuel = date_heur_actuel.month
     jour_dans_mois_actuel = get_days_in_month(year_actuel, mois_actuel)
-    print(f"Jours dans le mois suivant : {jour_dans_mois_actuel}")
 
     # On calcule le jour suivant du 25 du mois actuel.
     date_heur_prochaine = date_heur_actuel.replace(day=set_day, hour=set_hour, minute=set_minute,
