@@ -6,7 +6,6 @@ import threading
 from datetime import datetime
 import configparser
 
-
 from func.utils import calculate_next_month_day, calculate_time_remaining
 from func.execute_query import execute_sql_query
 from func.export_to_excel import export_to_excel
@@ -34,6 +33,7 @@ smtp = {'server': server_default,
         'port': port_default
         }
 
+
 def create_historique_table():
     try:
         conn = sqlite3.connect('./DB_TEST.sqlite3')
@@ -51,7 +51,6 @@ def create_historique_table():
     except sqlite3.Error as e:
         # Handle the error if the table creation fails
         messagebox.showerror("Error", f"An error occurred while creating the 'historique' table: {str(e)}")
-
 
 
 def data_sent_email():
@@ -91,8 +90,7 @@ def data_sent_email():
 
             df = execute_sql_query(base)
             filename = export_to_excel(df=df, objet=name)
-            recipients = recipient.split(",")
-            send_email_with_attachment(objet=name, filename=filename, recipients=recipients, smtp=smtp)
+            send_email_with_attachment(objet=name, filename=filename, recipients=recipient, smtp=smtp)
 
         cursor.close()
         conn.close()
@@ -102,6 +100,7 @@ def data_sent_email():
     except Exception as e:
         # You can customize the error message as per your requirement
         messagebox.showerror("Error", f"An error occurred: {str(e)} ")
+
 
 def execute_script():
     try:
@@ -171,7 +170,9 @@ if __name__ == "__main__":
     history_tree.heading("Time", text="Time")
     history_tree.pack()
 
+
     def update_history_table():
+
         try:
             conn = sqlite3.connect('./DB_TEST.sqlite3')
             cursor = conn.cursor()
@@ -187,7 +188,9 @@ if __name__ == "__main__":
 
             conn.close()
         except sqlite3.Error as e:
-            messagebox.showerror("Error", f"An error occurred while fetching data from the 'historique' table: {str(e)}")
+            messagebox.showerror("Error",
+                                 f"An error occurred while fetching data from the 'historique' table: {str(e)}")
+
 
     # Call create_historique_table() to ensure the table exists
     create_historique_table()
