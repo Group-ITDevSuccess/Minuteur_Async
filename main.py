@@ -43,7 +43,8 @@ def create_historique_table():
                 email TEXT,
                 data TEXT,
                 date DATE,
-                time TIME
+                time TIME,
+                status TEXT
             )
         """)
         conn.commit()
@@ -51,7 +52,6 @@ def create_historique_table():
     except sqlite3.Error as e:
         # Handle the error if the table creation fails
         messagebox.showerror("Error", f"An error occurred while creating the 'historique' table: {str(e)}")
-
 
 def data_sent_email():
     try:
