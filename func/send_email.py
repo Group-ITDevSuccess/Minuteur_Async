@@ -1,4 +1,6 @@
 import smtplib
+import sqlite3
+import datetime
 from email.message import EmailMessage
 
 
@@ -10,7 +12,7 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
     message = EmailMessage()
     message["Subject"] = f"Données de {objet}"
     message["From"] = smtp['username']
-    message["To"] = ", ".join(recipients)
+    message["To"] = recipients
 
     message.set_content("Veuillez trouver ci-joint le fichier Excel contenant les résultats de la requête SQL.")
 
@@ -22,13 +24,13 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
         server.starttls()
         server.login(smtp['username'], smtp['password'])
         server.send_message(message)
-        print(f"Message sent to {', '.join(recipients)}")
+        print(f"Message sent to {recipients}")
     
     conn = sqlite3.connect('./DB_TEST.sqlite3')
     cursor = conn.cursor()
-    cursor.execute('''
+    cursor.execute("""
         INSERT INTO historique (email, data, date, time)
         VALUES (?, ?, ?, ?)
-    ''', (", ".join(recipients), filename, datetime.now().date(), datetime.now().time()))
+        """, (recipients, filename, datetime.datetime.now().date(), datetime.datetime.now().time()))
     conn.commit()
     conn.close()
