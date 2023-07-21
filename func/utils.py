@@ -28,7 +28,7 @@ def calculate_time_remaining():
     if date_heur_actuel > date_heur_prochaine:
         mois_suivant = mois_actuel + 1
 
-        if mois_actuel > 12:
+        if mois_suivant > 12:
             mois_suivant = 1
             year_actuel += 1
 
@@ -50,19 +50,23 @@ def calculate_next_month_day():
     jour_dans_mois_actuel = get_days_in_month(year_actuel, mois_actuel)
     print(f"Jours dans le mois suivant : {jour_dans_mois_actuel}")
 
-    date_heur_prochaine = date_heur_actuel + datetime.timedelta(days=set_day, hours=set_hour, minutes=set_minute,
-                                                                seconds=set_second, microseconds=set_microsecond)
+    # On calcule le jour suivant du 25 du mois actuel.
+    date_heur_prochaine = date_heur_actuel.replace(day=set_day, hour=set_hour, minute=set_minute,
+                                                   second=set_second, microsecond=set_microsecond)
+    date_heur_prochaine += datetime.timedelta(days=1)
 
-    if date_heur_actuel > date_heur_prochaine:
-        mois_suivant = mois_actuel + 1
-        if mois_actuel > 12:
+    # On avance au mois suivant en vérifiant si le jour 25 est valide dans ce mois.
+    while date_heur_prochaine.day != set_day:
+        mois_suivant = date_heur_prochaine.month + 1
+        if mois_suivant > 12:
             mois_suivant = 1
             year_actuel += 1
 
-        jour_dans_mois_suivant = get_days_in_month(year_actuel, mois_suivant)
-
-        if set_day <= jour_dans_mois_suivant:
-            date_heur_prochaine = date_heur_prochaine.replace(month=mois_suivant, year=year_actuel)
+        jours_dans_mois_suivant = get_days_in_month(year_actuel, mois_suivant)
+        if set_day <= jours_dans_mois_suivant:
+            date_heur_prochaine = date_heur_prochaine.replace(day=set_day, month=mois_suivant, year=year_actuel)
+        else:
+            date_heur_prochaine = date_heur_prochaine.replace(day=1, month=mois_suivant, year=year_actuel)
 
     return date_heur_prochaine
 
