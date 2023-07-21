@@ -171,27 +171,28 @@ def query_thread():
 if __name__ == "__main__":
     window = tk.Tk()
     window.title("Programme d'envoi de données")
-    window.geometry("600x400")  # Set a default window size
+    window.geometry("800x500")  # Set a default window size
 
     # Set a custom style for widgets
     style = ttk.Style()
-    style.configure('Custom.TLabel', font=('Helvetica', 16), padding=10)
-    style.configure('Custom.TButton', font=('Helvetica', 14), padding=10)
+    style.configure('Custom.TLabel', font=('Helvetica', 20), padding=10)
+    style.configure('Custom.TButton', font=('Helvetica', 16), padding=10)
     style.configure('Custom.Treeview', font=('Helvetica', 12))
 
+    # Create a frame to organize widgets
+    content_frame = ttk.Frame(window)
+    content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
     # Création de l'étiquette pour afficher le temps restant
-    time_remaining_label = ttk.Label(window, text="Envoi de Mail Automatique", style='Custom.TLabel')
+    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel')
     time_remaining_label.pack(pady=10)
 
-    # Mise à jour périodique de l'étiquette du temps restant
-    update_label_periodically()
-
     # Bouton pour exécuter le script
-    execute_button = ttk.Button(window, text="Exécuter le script", command=query_thread, style='Custom.TButton')
+    execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
 
     # Create a Treeview widget to display the history table
-    history_tree = ttk.Treeview(window, columns=("Email", "Data", "Date", "Time"), show="headings", style='Custom.Treeview')
+    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time"), show="headings", style='Custom.Treeview')
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
