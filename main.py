@@ -136,12 +136,6 @@ def update_history_table():
                              f"An error occurred while fetching data from the 'historique' table: {str(e)}")
 
 
-def update_label_periodically():
-    update_time_remaining_label()
-    window.after(1000, update_label_periodically)
-    window.after(2000, update_history_table)  # Update every 1 seconds
-
-
 def update_time_remaining_label():
     heur_rappel = calculate_time_remaining()
     if heur_rappel.days == 0 and heur_rappel.seconds == 0:
@@ -168,6 +162,12 @@ def query_thread():
     query.start()
 
 
+def update_label_periodically():
+    update_time_remaining_label()
+    window.after(1000, update_label_periodically)
+    window.after(1000, update_history_table)  # Update every 1 seconds
+
+
 if __name__ == "__main__":
     window = tk.Tk()
     window.title("Programme d'envoi de données")
@@ -187,12 +187,15 @@ if __name__ == "__main__":
     time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel')
     time_remaining_label.pack(pady=10)
 
+    update_label_periodically()
+
     # Bouton pour exécuter le script
     execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
 
     # Create a Treeview widget to display the history table
-    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time"), show="headings", style='Custom.Treeview')
+    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time"), show="headings",
+                                style='Custom.Treeview')
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
     history_tree.heading("Data", text="Data", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
