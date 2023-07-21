@@ -116,9 +116,30 @@ def format_time(days, hours, minutes, seconds):
     return f"{days} jours, {hours:02d} heures, {minutes:02d} minutes, {seconds:02d} secondes"
 
 
+def update_history_table():
+    try:
+        conn = sqlite3.connect('./DB_TEST.sqlite3')
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT email, data, date, time FROM historique
+        """)
+        rows = cursor.fetchall()
+
+        history_tree.delete(*history_tree.get_children())
+
+        for row in rows:
+            history_tree.insert("", "end", values=row)
+
+        conn.close()
+    except sqlite3.Error as e:
+        messagebox.showerror("Error",
+                             f"An error occurred while fetching data from the 'historique' table: {str(e)}")
+
+
 def update_label_periodically():
     update_time_remaining_label()
     window.after(1000, update_label_periodically)
+    window.after(2000, update_history_table)  # Update every 1 seconds
 
 
 def update_time_remaining_label():
@@ -170,33 +191,10 @@ if __name__ == "__main__":
     history_tree.heading("Time", text="Time")
     history_tree.pack()
 
-
-    def update_history_table():
-
-        try:
-            conn = sqlite3.connect('./DB_TEST.sqlite3')
-            cursor = conn.cursor()
-            cursor.execute("""
-                SELECT email, data, date, time FROM historique
-            """)
-            rows = cursor.fetchall()
-
-            history_tree.delete(*history_tree.get_children())
-
-            for row in rows:
-                history_tree.insert("", "end", values=row)
-
-            conn.close()
-        except sqlite3.Error as e:
-            messagebox.showerror("Error",
-                                 f"An error occurred while fetching data from the 'historique' table: {str(e)}")
-
-
     # Call create_historique_table() to ensure the table exists
     create_historique_table()
 
     # Call the function to update the history table periodically
     update_history_table()
-    window.after(5000, update_history_table)  # Update every 5 seconds
 
     window.mainloop()

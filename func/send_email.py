@@ -33,6 +33,6 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
     cursor.execute("""
         INSERT INTO historique (email, data, date, time)
         VALUES (?, ?, ?, ?)
-        """, (str(recipients), objet, date, time))
+        """, (str(recipients), str(objet), str(date), str(time)))
     conn.commit()
     conn.close()
