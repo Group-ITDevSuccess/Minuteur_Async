@@ -5,6 +5,7 @@ import tkinter.messagebox as messagebox
 import threading
 from datetime import datetime
 import configparser
+import os  # Import the os module to get the path of the script directory
 
 from func.utils import calculate_next_month_day, calculate_time_remaining
 from func.execute_query import execute_sql_query
@@ -124,7 +125,7 @@ def update_history_table():
 
         # Fetch data from the 'historique' table in descending order based on 'date' and 'time'
         cursor.execute("""
-            SELECT email, data, date, time, status FROM historique
+            SELECT date, time, email, data, status FROM historique
             ORDER BY date DESC, time DESC
         """)
         rows = cursor.fetchall()
@@ -132,7 +133,9 @@ def update_history_table():
         history_tree.delete(*history_tree.get_children())
 
         for row in rows:
-            history_tree.insert("", "end", values=row)
+            # Rearrange the order of data to match the column order (Date, Heure, Email, Donnée)
+            data_in_order = [row[0], row[1], row[2], row[3], row[4]]
+            history_tree.insert("", "end", values=data_in_order)
 
         conn.close()
     except sqlite3.Error as e:
@@ -202,6 +205,11 @@ def query_thread():
     query.start()
 
 
+def set_window_icon(window, icon_path):
+    if os.path.exists(icon_path):
+        window.iconbitmap(icon_path)
+        
+
 if __name__ == "__main__":
     window = tk.Tk()
     window.title("Programme d'envoi de données")
@@ -215,6 +223,7 @@ if __name__ == "__main__":
     style.configure('Custom.Treeview.Heading', font=('Helvetica', 14, 'bold'), background='#dcdcdc', foreground='black')
     style.configure('Custom.Treeview', background='#f0f0f0')  # Set Treeview background color
 
+
     # Define the layout for the 'Custom.TLabel.Colored' style
     style.layout('Custom.TLabel.Colored',
                  [('Label.border', {'sticky': 'nswe', 'children':
@@ -227,7 +236,7 @@ if __name__ == "__main__":
     content_frame.pack(fill=tk.BOTH, expand=True)
 
     # Create the colored label using the 'Custom.TLabel.Colored' style
-    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel.Colored')
+    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique",font=('Helvetica', 20), style='Custom.TLabel.Colored')
     time_remaining_label.pack(pady=10)
 
     # Bouton pour exécuter le script
@@ -240,11 +249,11 @@ if __name__ == "__main__":
     date_combobox.pack(pady=10)
 
     # Create a Treeview widget to display the history table
-    history_tree = ttk.Treeview(content_frame, columns=("Email", "Donnée", "Date", "Heure", "Statut"), show="headings", style='Custom.Treeview')
-    history_tree.heading("Email", text="Email", anchor=tk.CENTER)
-    history_tree.heading("Donnée", text="Donnée", anchor=tk.CENTER)
+    history_tree = ttk.Treeview(content_frame, columns=("Date", "Heure", "Email", "Donnée", "Statut"), show="headings", style='Custom.Treeview')
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
     history_tree.heading("Heure", text="Heure", anchor=tk.CENTER)
+    history_tree.heading("Email", text="Email", anchor=tk.CENTER)
+    history_tree.heading("Donnée", text="Donnée", anchor=tk.CENTER)
     history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)
 
     # Add a vertical scrollbar to the right of the table
@@ -253,6 +262,12 @@ if __name__ == "__main__":
 
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
     scrollbar.place(relx=1, rely=0, relheight=1)  # Place the scrollbar on the right side
+
+    # Set a custom background color for the window
+    window.configure(bg='#ffffff')
+
+    # Set a window icon (change 'icon.ico' to the path of your icon file)
+    # set_window_icon(window, 'logo-inviso.ico')
 
     # Call the function to update the label and history table periodically
     update_label_periodically()
