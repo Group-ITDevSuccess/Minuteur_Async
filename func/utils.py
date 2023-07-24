@@ -1,12 +1,28 @@
 import calendar
 import datetime
+import os
+import configparser
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
-set_hour = 11
-set_minute = 30
-set_second = 00
-set_microsecond = 0
-set_day = 25
+# Créer un objet ConfigParser
+config = configparser.ConfigParser()
 
+# Charger les valeurs du fichier .env dans le ConfigParser
+config.read('.env')
+
+# Récupérer les valeurs des variables d'environnement à partir de ConfigParser
+smtp_username = config.get('DEFAULT', 'smtp_username')
+smtp_password = config.get('DEFAULT', 'smtp_password')
+smtp_serveur = config.get('DEFAULT', 'smtp_serveur')
+smtp_port = config.get('DEFAULT', 'smtp_port')
+recipient = config.get('USER', 'recipient')
+database_name = config.get('LOCAL', 'database_name')
+set_hour = int(config.get('SETTINGS', 'set_hour'))
+set_minute = int(config.get('SETTINGS', 'set_minute'))
+set_second = int(config.get('SETTINGS', 'set_second'))
+set_microsecond = int(config.get('SETTINGS', 'set_microsecond'))
+set_day = int(config.get('SETTINGS', 'set_day'))
 
 def now():
     return datetime.datetime.now()
@@ -69,7 +85,36 @@ def calculate_next_month_day():
     return date_heur_prochaine
 
 
-timer_remaining = calculate_time_remaining()
-print(timer_remaining)
-next_month = calculate_next_month_day()
-print(next_month)
+class EnvFileHandler(FileSystemEventHandler):
+    def on_modified(self, event):
+        if event.src_path.endswith('.env'):
+            # Re-charger les valeurs du fichier .env
+            config.read('.env')
+
+            # Mise à jour des valeurs des variables d'environnement
+            global smtp_username, smtp_password, smtp_serveur, smtp_port
+            global recipient, database_name, set_hour, set_minute, set_second, set_microsecond, set_day
+
+            smtp_username = config.get('DEFAULT', 'smtp_username')
+            smtp_password = config.get('DEFAULT', 'smtp_password')
+            smtp_serveur = config.get('DEFAULT', 'smtp_serveur')
+            smtp_port = config.get('DEFAULT', 'smtp_port')
+            recipient = config.get('USER', 'recipient')
+            database_name = config.get('LOCAL', 'database_name')
+            set_hour = int(config.get('SETTINGS', 'set_hour'))
+            set_minute = int(config.get('SETTINGS', 'set_minute'))
+            set_second = int(config.get('SETTINGS', 'set_second'))
+            set_microsecond = int(config.get('SETTINGS', 'set_microsecond'))
+            set_day = int(config.get('SETTINGS', 'set_day'))
+
+
+# Fonction pour démarrer la surveillance du fichier .env
+def watch_env_file():
+    event_handler = EnvFileHandler()
+    observer = Observer()
+    observer.schedule(event_handler, path='.', recursive=False)
+    observer.start()
+
+
+# Appeler la fonction pour démarrer la surveillance du fichier .env
+watch_env_file()

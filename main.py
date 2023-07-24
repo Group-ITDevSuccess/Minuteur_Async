@@ -7,11 +7,15 @@ from datetime import datetime
 import configparser
 import os  # Import the os module to get the path of the script directory
 
-from func.utils import calculate_next_month_day, calculate_time_remaining
+from func.utils import calculate_next_month_day, calculate_time_remaining, EnvFileHandler
 from func.execute_query import execute_sql_query
 from func.export_to_excel import export_to_excel
 from func.send_email import send_email_with_attachment
 from data_send import data_sent_email
+from dotenv import load_dotenv
+
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 # Chemin du fichier .env
 env_file = '.env'
@@ -36,6 +40,20 @@ smtp = {'server': server_default,
         'password': password_default,
         'port': port_default
         }
+
+
+
+def watch_env_file():
+    calculate_time_remaining()
+    calculate_next_month_day()
+    update_time_remaining_label()
+    update_history_table()
+    update_label_periodically()
+    event_handler = EnvFileHandler()
+    observer = Observer()
+    observer.schedule(event_handler, path='.', recursive=False)
+    observer.start()
+
 
 
 def create_historique_table():
@@ -75,16 +93,6 @@ def data_sent_email():
         for row in rows:
             # Traitez chaque ligne de données ici
             name, server, username, password, email = row
-            # print()
-            # print("----------------------")
-            # print("Société Name:", name)
-            # print("Société Server:", server)
-            # print("Société Username:", username)
-            # print("Société Password:", password)
-            # print("Email:", email)
-            # print("----------------------")
-            # print()
-
             base = {
                 'server': server,
                 'database': name,
@@ -95,7 +103,8 @@ def data_sent_email():
 
             df = execute_sql_query(base)
             filename = export_to_excel(df=df, objet=name)
-            send_email_with_attachment(objet=name, filename=filename, recipients=recipient, smtp=smtp, local_db=database_path)
+            send_email_with_attachment(objet=name, filename=filename, recipients=recipient, smtp=smtp,
+                                       local_db=database_path)
 
         cursor.close()
         conn.close()
@@ -147,9 +156,9 @@ def update_history_table():
 
 
 def update_label_periodically():
-    update_time_remaining_label()
-    window.after(1000, update_label_periodically)
-    window.after(1500, update_history_table)  # Update every 1 seconds
+    window.after(1000, watch_env_file)
+
+    # window.after(2000, update_history_table)  # Update every 1 seconds
 
 
 def update_time_remaining_label():
@@ -186,31 +195,163 @@ def get_unique_dates():
         return []
 
 
-def filter_by_date():
-    selected_date = date_combobox.get()
-    if selected_date:
-        history_tree.delete(*history_tree.get_children())
-        try:
-            conn = sqlite3.connect(database_path)
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM Historique WHERE date=?", (selected_date,))
-            rows = cursor.fetchall()
-            for row in rows:
-                history_tree.insert("", "end", values=row)
-            conn.close()
-        except sqlite3.Error as e:
-            messagebox.showerror("Error", f"An error occurred while fetching data for the selected date: {str(e)}")
-        update_history_table()  # Update the history table after filtering
-
-
 def query_thread():
     query = threading.Thread(target=execute_script, args=())
     query.start()
 
 
-def set_window_icon(window, icon_path):
-    if os.path.exists(icon_path):
-        window.iconbitmap(icon_path)
+def update_config():
+    # Create the popup window
+    config_popup = tk.Toplevel(window)
+    config_popup.title("Modifier les configurations")
+    config_popup.geometry("400x400")
+    config_popup.resizable(False, False)
+
+    # Create a frame for all the configuration widgets
+    config_frame = ttk.Frame(config_popup, padding=20)
+    config_frame.pack(fill=tk.BOTH, expand=True)
+
+    # Create labels and entry fields to display and modify the config data
+    server_label = ttk.Label(config_frame, text="SMTP Serveur:")
+    server_entry = ttk.Entry(config_frame)
+    server_entry.insert(tk.END, smtp['server'])
+
+    username_label = ttk.Label(config_frame, text="SMTP Username:")
+    username_entry = ttk.Entry(config_frame)
+    username_entry.insert(tk.END, smtp['username'])
+
+    password_label = ttk.Label(config_frame, text="SMTP Password:")
+    password_entry = ttk.Entry(config_frame, show="*")
+    password_entry.insert(tk.END, smtp['password'])
+
+    port_label = ttk.Label(config_frame, text="SMTP Port:")
+    port_entry = ttk.Entry(config_frame)
+    port_entry.insert(tk.END, smtp['port'])
+
+    # Entry fields for [SETTINGS] section
+    set_hour_label = ttk.Label(config_frame, text="Heure:")
+    set_hour_entry = ttk.Entry(config_frame)
+    set_hour_entry.insert(tk.END, config.get('SETTINGS', 'set_hour'))
+
+    set_minute_label = ttk.Label(config_frame, text="Minute:")
+    set_minute_entry = ttk.Entry(config_frame)
+    set_minute_entry.insert(tk.END, config.get('SETTINGS', 'set_minute'))
+
+    set_second_label = ttk.Label(config_frame, text="Seconde:")
+    set_second_entry = ttk.Entry(config_frame)
+    set_second_entry.insert(tk.END, config.get('SETTINGS', 'set_second'))
+
+    set_microsecond_label = ttk.Label(config_frame, text="Microseconde:")
+    set_microsecond_entry = ttk.Entry(config_frame)
+    set_microsecond_entry.insert(tk.END, config.get('SETTINGS', 'set_microsecond'))
+
+    set_day_label = ttk.Label(config_frame, text="Jour:")
+    set_day_entry = ttk.Entry(config_frame)
+    set_day_entry.insert(tk.END, config.get('SETTINGS', 'set_day'))
+
+    # Entry fields for [USER] section
+    recipient_label = ttk.Label(config_frame, text="Recipient:")
+    recipient_entry = ttk.Entry(config_frame)
+    recipient_entry.insert(tk.END, config.get('USER', 'RECIPIENT'))
+
+    # Entry fields for [LOCAL] section
+    database_name_label = ttk.Label(config_frame, text="Nom de la base de données:")
+    database_name_entry = ttk.Entry(config_frame)
+    database_name_entry.insert(tk.END, config.get('LOCAL', 'DATABASE_NAME'))
+
+    # Function to save the modified data to the .env file
+    def save_config():
+        try:
+            config.set('DEFAULT', 'SMTP_SERVEUR', server_entry.get())
+            config.set('DEFAULT', 'SMTP_USERNAME', username_entry.get())
+            config.set('DEFAULT', 'SMTP_PASSWORD', password_entry.get())
+            config.set('DEFAULT', 'SMTP_PORT', port_entry.get())
+
+            # Save the new settings in the [SETTINGS] section
+            config.set('SETTINGS', 'set_hour', set_hour_entry.get())
+            config.set('SETTINGS', 'set_minute', set_minute_entry.get())
+            config.set('SETTINGS', 'set_second', set_second_entry.get())
+            config.set('SETTINGS', 'set_microsecond', set_microsecond_entry.get())
+            config.set('SETTINGS', 'set_day', set_day_entry.get())
+
+            # Save the new recipient in the [USER] section
+            config.set('USER', 'RECIPIENT', recipient_entry.get())
+
+            # Save the new database name in the [LOCAL] section
+            config.set('LOCAL', 'DATABASE_NAME', database_name_entry.get())
+
+            with open(env_file, 'w') as configfile:
+                config.write(configfile)
+
+            # Mettez à jour toutes les données après avoir sauvegardé les configurations
+            refresh_all_data()
+
+            config_popup.destroy()  # Close the popup after saving
+            messagebox.showinfo("Success", "Configurations saved successfully.")
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred while saving configurations: {str(e)}")
+
+    # Create a save button to save the changes
+    save_button = ttk.Button(config_frame, text="Enregistrer", command=save_config)
+
+    # Grid layout for the popup widgets
+    server_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+    server_entry.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
+
+    username_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+    username_entry.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
+
+    password_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
+    password_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+
+    port_label.grid(row=3, column=0, padx=10, pady=5, sticky="w")
+    port_entry.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
+
+    # Grid layout for the [SETTINGS] section
+    set_hour_label.grid(row=4, column=0, padx=10, pady=5, sticky="w")
+    set_hour_entry.grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+
+    set_minute_label.grid(row=5, column=0, padx=10, pady=5, sticky="w")
+    set_minute_entry.grid(row=5, column=1, padx=10, pady=5, sticky="ew")
+
+    set_second_label.grid(row=6, column=0, padx=10, pady=5, sticky="w")
+    set_second_entry.grid(row=6, column=1, padx=10, pady=5, sticky="ew")
+
+    set_microsecond_label.grid(row=7, column=0, padx=10, pady=5, sticky="w")
+    set_microsecond_entry.grid(row=7, column=1, padx=10, pady=5, sticky="ew")
+
+    set_day_label.grid(row=8, column=0, padx=10, pady=5, sticky="w")
+    set_day_entry.grid(row=8, column=1, padx=10, pady=5, sticky="ew")
+
+    # Grid layout for the [USER] section
+    recipient_label.grid(row=9, column=0, padx=10, pady=5, sticky="w")
+    recipient_entry.grid(row=9, column=1, padx=10, pady=5, sticky="ew")
+
+    # Grid layout for the [LOCAL] section
+    database_name_label.grid(row=10, column=0, padx=10, pady=5, sticky="w")
+    database_name_entry.grid(row=10, column=1, padx=10, pady=5, sticky="ew")
+
+    save_button.grid(row=11, column=0, columnspan=2, pady=10)
+
+
+def refresh_all_data():
+    # Mettez à jour toutes les données nécessaires à partir du fichier .env
+    load_dotenv()
+
+    global set_hour, set_minute, set_second, set_microsecond, set_day
+
+    set_hour = int(os.getenv("SET_HOUR", 11))
+    set_minute = int(os.getenv("SET_MINUTE", 30))
+    set_second = int(os.getenv("SET_SECOND", 0))
+    set_microsecond = int(os.getenv("SET_MICROSECOND", 0))
+    set_day = int(os.getenv("SET_DAY", 25))
+
+    # Vous pouvez également mettre à jour d'autres données à partir du fichier .env si nécessaire
+
+    window.after(1000, calculate_time_remaining)
+    window.after(1000, calculate_next_month_day)
+    window.after(1000, update_time_remaining_label)
+    window.after(1000, update_history_table)
 
 
 if __name__ == "__main__":
@@ -246,10 +387,9 @@ if __name__ == "__main__":
     execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
 
-    # Create a Combobox widget to select dates
-    date_combobox = ttk.Combobox(content_frame, values=get_unique_dates(), state="readonly")
-    date_combobox.bind("<<ComboboxSelected>>", lambda event: filter_by_date())
-    date_combobox.pack(pady=10)
+    # Create a "Config" button to modify the configurations
+    config_button = ttk.Button(content_frame, text="Configuration", command=update_config, style='Custom.TButton')
+    config_button.pack(pady=10)
 
     # Create a Treeview widget to display the history table
     history_tree = ttk.Treeview(content_frame, columns=("Date", "Heure", "Email", "Donnée", "Statut"), show="headings",
