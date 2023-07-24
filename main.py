@@ -167,10 +167,39 @@ def update_time_remaining_label():
                                        format_time(days, hours, minutes, seconds)
 
 
+def get_unique_dates():
+    try:
+        conn = sqlite3.connect('./DB_TEST.sqlite3')
+        cursor = conn.cursor()
+        cursor.execute("SELECT DISTINCT date FROM historique ORDER BY date DESC")
+        dates = cursor.fetchall()
+        conn.close()
+        return [date[0] for date in dates]
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"An error occurred while fetching unique dates: {str(e)}")
+        return []
+
+def filter_by_date():
+    selected_date = date_combobox.get()
+    if selected_date:
+        history_tree.delete(*history_tree.get_children())
+        try:
+            conn = sqlite3.connect('./DB_TEST.sqlite3')
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM historique WHERE date=?", (selected_date,))
+            rows = cursor.fetchall()
+            for row in rows:
+                history_tree.insert("", "end", values=row)
+            conn.close()
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", f"An error occurred while fetching data for the selected date: {str(e)}")
+        update_history_table()  # Update the history table after filtering
+
+
+
 def query_thread():
     query = threading.Thread(target=execute_script, args=())
     query.start()
-
 
 
 if __name__ == "__main__":
@@ -198,12 +227,17 @@ if __name__ == "__main__":
     content_frame.pack(fill=tk.BOTH, expand=True)
 
     # Create the colored label using the 'Custom.TLabel.Colored' style
-    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", font=('Helvetica', 20), style='Custom.TLabel.Colored')
+    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel.Colored')
     time_remaining_label.pack(pady=10)
 
     # Bouton pour exécuter le script
     execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
     execute_button.pack(pady=10)
+
+    # Create a Combobox widget to select dates
+    date_combobox = ttk.Combobox(content_frame, values=get_unique_dates(), state="readonly")
+    date_combobox.bind("<<ComboboxSelected>>", lambda event: filter_by_date())
+    date_combobox.pack(pady=10)
 
     # Create a Treeview widget to display the history table
     history_tree = ttk.Treeview(content_frame, columns=("Email", "Donnée", "Date", "Heure", "Statut"), show="headings", style='Custom.Treeview')
@@ -213,18 +247,16 @@ if __name__ == "__main__":
     history_tree.heading("Heure", text="Heure", anchor=tk.CENTER)
     history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)
 
-    # Add a vertical scrollbar to the table
+    # Add a vertical scrollbar to the right of the table
     scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=history_tree.yview)
     history_tree.configure(yscrollcommand=scrollbar.set)
 
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-    scrollbar.pack(side="right", fill="y")
+    scrollbar.place(relx=1, rely=0, relheight=1)  # Place the scrollbar on the right side
 
     # Call the function to update the label and history table periodically
     update_label_periodically()
 
-    # Call the function to update the history table periodically
-    update_history_table()
 
     # Start the tkinter main loop
     window.mainloop()
