@@ -194,7 +194,7 @@ if __name__ == "__main__":
     style.configure('Custom.TLabel.Colored', font=('Helvetica', 20), padding=10, background='#008080', foreground='white')
 
     # Create the colored label
-    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", font=('Helvetica', 20))
+    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique")
     time_remaining_label.pack(pady=10)
 
     # Bouton pour exécuter le script
@@ -202,11 +202,11 @@ if __name__ == "__main__":
     execute_button.pack(pady=10)
 
     # Create a Treeview widget to display the history table
-    history_tree = ttk.Treeview(content_frame, columns=("Email", "Data", "Date", "Time", "Statut"), show="headings", style='Custom.Treeview')
+    history_tree = ttk.Treeview(content_frame, columns=("Email", "Donnée", "Date", "Heure", "Statut"), show="headings", style='Custom.Treeview')
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
-    history_tree.heading("Data", text="Data", anchor=tk.CENTER)
+    history_tree.heading("Donnée", text="Donnée", anchor=tk.CENTER)
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
-    history_tree.heading("Time", text="Time", anchor=tk.CENTER)
+    history_tree.heading("Heure", text="Heure", anchor=tk.CENTER)
     history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
