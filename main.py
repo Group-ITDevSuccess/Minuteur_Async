@@ -27,6 +27,9 @@ server_default = config.get('DEFAULT', 'SMTP_SERVEUR')
 username_default = config.get('DEFAULT', 'SMTP_USERNAME')
 password_default = config.get('DEFAULT', 'SMTP_PASSWORD')
 port_default = config.get('DEFAULT', 'SMTP_PORT')
+database_name = config.get('LOCAL', 'DATABASE_NAME')
+
+database_path = os.path.join(os.path.dirname(__file__), database_name)
 
 smtp = {'server': server_default,
         'username': username_default,
@@ -37,10 +40,10 @@ smtp = {'server': server_default,
 
 def create_historique_table():
     try:
-        conn = sqlite3.connect('./DB_TEST.sqlite3')
+        conn = sqlite3.connect(database_path)
         cursor = conn.cursor()
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS historique (
+            CREATE TABLE IF NOT EXISTS Historique (
                 email TEXT,
                 data TEXT,
                 date DATE,
@@ -52,12 +55,12 @@ def create_historique_table():
         conn.close()
     except sqlite3.Error as e:
         # Handle the error if the table creation fails
-        messagebox.showerror("Error", f"An error occurred while creating the 'historique' table: {str(e)}")
+        messagebox.showerror("Error", f"An error occurred while creating the 'Historique' table: {str(e)}")
 
 
 def data_sent_email():
     try:
-        conn = sqlite3.connect('./DB_TEST.sqlite3')
+        conn = sqlite3.connect(database_path)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -72,15 +75,15 @@ def data_sent_email():
         for row in rows:
             # Traitez chaque ligne de données ici
             name, server, username, password, email = row
-            print()
-            print("----------------------")
-            print("Société Name:", name)
-            print("Société Server:", server)
-            print("Société Username:", username)
-            print("Société Password:", password)
-            print("Email:", email)
-            print("----------------------")
-            print()
+            # print()
+            # print("----------------------")
+            # print("Société Name:", name)
+            # print("Société Server:", server)
+            # print("Société Username:", username)
+            # print("Société Password:", password)
+            # print("Email:", email)
+            # print("----------------------")
+            # print()
 
             base = {
                 'server': server,
@@ -92,7 +95,7 @@ def data_sent_email():
 
             df = execute_sql_query(base)
             filename = export_to_excel(df=df, objet=name)
-            send_email_with_attachment(objet=name, filename=filename, recipients=recipient, smtp=smtp)
+            send_email_with_attachment(objet=name, filename=filename, recipients=recipient, smtp=smtp, local_db=database_path)
 
         cursor.close()
         conn.close()
@@ -120,12 +123,12 @@ def format_time(days, hours, minutes, seconds):
 
 def update_history_table():
     try:
-        conn = sqlite3.connect('./DB_TEST.sqlite3')
+        conn = sqlite3.connect(database_path)
         cursor = conn.cursor()
 
-        # Fetch data from the 'historique' table in descending order based on 'date' and 'time'
+        # Fetch data from the 'Historique' table in descending order based on 'date' and 'time'
         cursor.execute("""
-            SELECT date, time, email, data, status FROM historique
+            SELECT date, time, email, data, status FROM Historique
             ORDER BY date DESC, time DESC
         """)
         rows = cursor.fetchall()
@@ -140,7 +143,7 @@ def update_history_table():
         conn.close()
     except sqlite3.Error as e:
         messagebox.showerror("Error",
-                             f"An error occurred while fetching data from the 'historique' table: {str(e)}")
+                             f"An error occurred while fetching data from the 'Historique' table: {str(e)}")
 
 
 def update_label_periodically():
@@ -172,9 +175,9 @@ def update_time_remaining_label():
 
 def get_unique_dates():
     try:
-        conn = sqlite3.connect('./DB_TEST.sqlite3')
+        conn = sqlite3.connect(database_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT DISTINCT date FROM historique ORDER BY date DESC")
+        cursor.execute("SELECT DISTINCT date FROM Historique ORDER BY date DESC")
         dates = cursor.fetchall()
         conn.close()
         return [date[0] for date in dates]
@@ -188,9 +191,9 @@ def filter_by_date():
     if selected_date:
         history_tree.delete(*history_tree.get_children())
         try:
-            conn = sqlite3.connect('./DB_TEST.sqlite3')
+            conn = sqlite3.connect(database_path)
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM historique WHERE date=?", (selected_date,))
+            cursor.execute("SELECT * FROM Historique WHERE date=?", (selected_date,))
             rows = cursor.fetchall()
             for row in rows:
                 history_tree.insert("", "end", values=row)

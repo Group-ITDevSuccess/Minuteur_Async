@@ -4,7 +4,7 @@ import datetime
 from email.message import EmailMessage
 
 
-def send_email_with_attachment(objet, filename, recipients, smtp):
+def send_email_with_attachment(objet, filename, recipients, smtp, local_db):
     try:
 
         # Vérifiez si les variables d'environnement sont définies
@@ -29,14 +29,14 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
             print(f"Message sent to {recipients}")
 
         # Connexion à la base de données
-        conn = sqlite3.connect('./DB_TEST.sqlite3')
+        conn = sqlite3.connect(local_db)
         cursor = conn.cursor()
         date = datetime.datetime.now().strftime("%Y-%m-%d")
         time = datetime.datetime.now().time()
 
         # Enregistrement du statut de l'envoi dans la table de l'historique
         cursor.execute("""
-            INSERT INTO historique (email, data, date, time, status)
+            INSERT INTO Historique (email, data, date, time, status)
             VALUES (?, ?, ?, ?, ?)
         """, (str(recipients), str(objet), str(date), str(time), "Envoyé"))
 
@@ -52,7 +52,7 @@ def send_email_with_attachment(objet, filename, recipients, smtp):
         time = datetime.datetime.now().time()
 
         cursor.execute("""
-            INSERT INTO historique (email, data, date, time, status)
+            INSERT INTO Historique (email, data, date, time, status)
             VALUES (?, ?, ?, ?, ?)
         """, (str(recipients), str(objet), str(date), str(time), "Non envoyé"))
 
