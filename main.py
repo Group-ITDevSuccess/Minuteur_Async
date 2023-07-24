@@ -146,7 +146,7 @@ def update_history_table():
 def update_label_periodically():
     update_time_remaining_label()
     window.after(1000, update_label_periodically)
-    window.after(2000, update_history_table)  # Update every 1 seconds
+    window.after(1500, update_history_table)  # Update every 1 seconds
 
 
 def update_time_remaining_label():
@@ -182,6 +182,7 @@ def get_unique_dates():
         messagebox.showerror("Error", f"An error occurred while fetching unique dates: {str(e)}")
         return []
 
+
 def filter_by_date():
     selected_date = date_combobox.get()
     if selected_date:
@@ -199,7 +200,6 @@ def filter_by_date():
         update_history_table()  # Update the history table after filtering
 
 
-
 def query_thread():
     query = threading.Thread(target=execute_script, args=())
     query.start()
@@ -208,7 +208,7 @@ def query_thread():
 def set_window_icon(window, icon_path):
     if os.path.exists(icon_path):
         window.iconbitmap(icon_path)
-        
+
 
 if __name__ == "__main__":
     window = tk.Tk()
@@ -223,20 +223,20 @@ if __name__ == "__main__":
     style.configure('Custom.Treeview.Heading', font=('Helvetica', 14, 'bold'), background='#dcdcdc', foreground='black')
     style.configure('Custom.Treeview', background='#f0f0f0')  # Set Treeview background color
 
-
     # Define the layout for the 'Custom.TLabel.Colored' style
     style.layout('Custom.TLabel.Colored',
                  [('Label.border', {'sticky': 'nswe', 'children':
-                                    [('Label.padding', {'sticky': 'nswe', 'children':
-                                                       [('Label.label', {'sticky': 'nswe'})],
-                                                       'border': '2'})],
+                     [('Label.padding', {'sticky': 'nswe', 'children':
+                         [('Label.label', {'sticky': 'nswe'})],
+                                         'border': '2'})],
                                     'border': '2'})])
 
     content_frame = ttk.Frame(window, padding=20)
     content_frame.pack(fill=tk.BOTH, expand=True)
 
     # Create the colored label using the 'Custom.TLabel.Colored' style
-    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique",font=('Helvetica', 20), style='Custom.TLabel.Colored')
+    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", font=('Helvetica', 20),
+                                     style='Custom.TLabel.Colored')
     time_remaining_label.pack(pady=10)
 
     # Bouton pour exécuter le script
@@ -249,7 +249,8 @@ if __name__ == "__main__":
     date_combobox.pack(pady=10)
 
     # Create a Treeview widget to display the history table
-    history_tree = ttk.Treeview(content_frame, columns=("Date", "Heure", "Email", "Donnée", "Statut"), show="headings", style='Custom.Treeview')
+    history_tree = ttk.Treeview(content_frame, columns=("Date", "Heure", "Email", "Donnée", "Statut"), show="headings",
+                                style='Custom.Treeview')
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
     history_tree.heading("Heure", text="Heure", anchor=tk.CENTER)
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
