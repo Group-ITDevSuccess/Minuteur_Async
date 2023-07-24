@@ -257,6 +257,7 @@ if __name__ == "__main__":
     # Call the function to update the label and history table periodically
     update_label_periodically()
 
+    get_unique_dates()
 
     # Start the tkinter main loop
     window.mainloop()
