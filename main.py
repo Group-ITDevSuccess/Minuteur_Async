@@ -86,11 +86,10 @@ def data_sent_email():
                 'username': username,
                 'password': password
             }
-            recipient = email
 
             df = execute_sql_query(base)
             filename = export_to_excel(df=df, objet=name)
-            send_email_with_attachment(objet=name, filename=filename, recipients=recipient, smtp=smtp,
+            send_email_with_attachment(objet=name, filename=filename, recipients=email, smtp=smtp,
                                        local_db=database_path)
 
         cursor.close()
@@ -236,11 +235,6 @@ def update_config():
     set_day_entry = ttk.Entry(config_frame)
     set_day_entry.insert(tk.END, os.getenv('SET_DAY'))
 
-    # Entry fields for [USER] section
-    recipient_label = ttk.Label(config_frame, text="Recipient:")
-    recipient_entry = ttk.Entry(config_frame)
-    recipient_entry.insert(tk.END, os.getenv('RECIPIENT'))
-
     # Entry fields for [LOCAL] section
     database_name_label = ttk.Label(config_frame, text="Nom de la base de données:")
     database_name_entry = ttk.Entry(config_frame)
@@ -297,9 +291,6 @@ def update_config():
             os.environ['SET_MICROSECOND'] = set_microsecond_entry.get()
             os.environ['SET_DAY'] = set_day_entry.get()
 
-            # Save the new recipient in the [USER] section
-            os.environ['RECIPIENT'] = recipient_entry.get()
-
             # Save the new database name in the [LOCAL] section
             os.environ['DATABASE_NAME'] = database_name_entry.get()
 
@@ -345,10 +336,6 @@ def update_config():
 
     set_day_label.grid(row=8, column=0, padx=10, pady=5, sticky="w")
     set_day_entry.grid(row=8, column=1, padx=10, pady=5, sticky="ew")
-
-    # Grid layout for the [USER] section
-    recipient_label.grid(row=9, column=0, padx=10, pady=5, sticky="w")
-    recipient_entry.grid(row=9, column=1, padx=10, pady=5, sticky="ew")
 
     # Grid layout for the [LOCAL] section
     database_name_label.grid(row=10, column=0, padx=10, pady=5, sticky="w")
