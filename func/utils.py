@@ -1,28 +1,38 @@
 import calendar
 import datetime
-import os
-import configparser
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-# Créer un objet ConfigParser
-config = configparser.ConfigParser()
+import os
+from dotenv import load_dotenv
 
-# Charger les valeurs du fichier .env dans le ConfigParser
-config.read('.env')
+# Get the absolute path to the .env file
+env_file = os.path.abspath('.env')
 
-# Récupérer les valeurs des variables d'environnement à partir de ConfigParser
-smtp_username = config.get('DEFAULT', 'smtp_username')
-smtp_password = config.get('DEFAULT', 'smtp_password')
-smtp_serveur = config.get('DEFAULT', 'smtp_serveur')
-smtp_port = config.get('DEFAULT', 'smtp_port')
-recipient = config.get('USER', 'recipient')
-database_name = config.get('LOCAL', 'database_name')
-set_hour = int(config.get('SETTINGS', 'set_hour'))
-set_minute = int(config.get('SETTINGS', 'set_minute'))
-set_second = int(config.get('SETTINGS', 'set_second'))
-set_microsecond = int(config.get('SETTINGS', 'set_microsecond'))
-set_day = int(config.get('SETTINGS', 'set_day'))
+# Load the environment variables from the .env file
+load_dotenv(env_file)
+
+
+def get_env_variable(key, default=None):
+    return os.getenv(key, default)
+
+
+def update_config_from_env():
+    global smtp_username, smtp_password, smtp_serveur, smtp_port
+    global recipient, database_name, set_hour, set_minute, set_second, set_microsecond, set_day
+
+    smtp_username = get_env_variable('smtp_username')
+    smtp_password = get_env_variable('smtp_password')
+    smtp_serveur = get_env_variable('smtp_serveur')
+    smtp_port = int(get_env_variable('smtp_port'))
+    recipient = get_env_variable('recipient')
+    database_name = get_env_variable('database_name')
+    set_hour = int(get_env_variable('set_hour'))
+    set_minute = int(get_env_variable('set_minute'))
+    set_second = int(get_env_variable('set_second'))
+    set_microsecond = int(get_env_variable('set_microsecond'))
+    set_day = int(get_env_variable('set_day'))
+
 
 def now():
     return datetime.datetime.now()
@@ -30,6 +40,19 @@ def now():
 
 def get_days_in_month(year, month):
     return calendar.monthrange(year, month)[1]
+
+
+def validate_integer(value):
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
+def validate_string(value):
+    if isinstance(value, str):
+        return value.strip()
+    return None
 
 
 def calculate_time_remaining():
@@ -87,28 +110,12 @@ def calculate_next_month_day():
 
 class EnvFileHandler(FileSystemEventHandler):
     def on_modified(self, event):
-        if event.src_path.endswith('.env'):
-            # Re-charger les valeurs du fichier .env
-            config.read('.env')
-
-            # Mise à jour des valeurs des variables d'environnement
-            global smtp_username, smtp_password, smtp_serveur, smtp_port
-            global recipient, database_name, set_hour, set_minute, set_second, set_microsecond, set_day
-
-            smtp_username = config.get('DEFAULT', 'smtp_username')
-            smtp_password = config.get('DEFAULT', 'smtp_password')
-            smtp_serveur = config.get('DEFAULT', 'smtp_serveur')
-            smtp_port = config.get('DEFAULT', 'smtp_port')
-            recipient = config.get('USER', 'recipient')
-            database_name = config.get('LOCAL', 'database_name')
-            set_hour = int(config.get('SETTINGS', 'set_hour'))
-            set_minute = int(config.get('SETTINGS', 'set_minute'))
-            set_second = int(config.get('SETTINGS', 'set_second'))
-            set_microsecond = int(config.get('SETTINGS', 'set_microsecond'))
-            set_day = int(config.get('SETTINGS', 'set_day'))
+        if event.src_path == env_file:
+            # Re-load the environment variables from the .env file
+            load_dotenv(env_file)
+            update_config_from_env()
 
 
-# Fonction pour démarrer la surveillance du fichier .env
 def watch_env_file():
     event_handler = EnvFileHandler()
     observer = Observer()
@@ -116,5 +123,8 @@ def watch_env_file():
     observer.start()
 
 
-# Appeler la fonction pour démarrer la surveillance du fichier .env
+# Update the configuration from the environment variables at the start
+update_config_from_env()
+
+# Call the function to start watching the .env file for changes
 watch_env_file()

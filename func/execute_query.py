@@ -20,12 +20,6 @@ def execute_sql_query(base):
         F_ECRITUREC.CT_NUM=F_COMPTET.CT_NUM
         WHERE EC_LETTRE=0 AND YEAR(JM_DATE)='2023'
     """
-    # query = """
-    #    SELECT F_ECRITUREC.CT_NUM, CT_INTITULE,
-    #    SUM(CASE WHEN EC_SENS=0 THEN EC_MONTANT ELSE -EC_MONTANT END)
-    #    AS SUMS FROM F_ECRITUREC INNER JOIN F_COMPTET ON F_ECRITUREC.CT_NUM=F_COMPTET.CT_NUM
-    #    GROUP BY F_ECRITUREC.CT_NUM, CT_INTITULE
-    # """
 
     with connection.cursor() as cursor:
         cursor.execute(query)

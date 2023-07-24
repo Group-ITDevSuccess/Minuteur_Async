@@ -3,42 +3,32 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox as messagebox
 import threading
-from datetime import datetime
 import configparser
-import os  # Import the os module to get the path of the script directory
-
+import os
+import datetime
 from func.utils import calculate_next_month_day, calculate_time_remaining, EnvFileHandler
 from func.execute_query import execute_sql_query
 from func.export_to_excel import export_to_excel
 from func.send_email import send_email_with_attachment
-from dotenv import load_dotenv
-
 from watchdog.observers import Observer
 from PIL import Image, ImageTk
 
 # Chemin du fichier .env
 env_file = '.env'
 
-# Créer un objet ConfigParser
+# Charger les variables d'environnement à partir du fichier .env
 config = configparser.ConfigParser()
-
-# Lire les variables d'environnement à partir du fichier .env
 config.read(env_file)
 
-# Récupérer les valeurs des variables d'environnement
-server_default = config.get('DEFAULT', 'SMTP_SERVEUR')
-username_default = config.get('DEFAULT', 'SMTP_USERNAME')
-password_default = config.get('DEFAULT', 'SMTP_PASSWORD')
-port_default = config.get('DEFAULT', 'SMTP_PORT')
 database_name = config.get('LOCAL', 'DATABASE_NAME')
-
 database_path = os.path.join(os.path.dirname(__file__), database_name)
 
-smtp = {'server': server_default,
-        'username': username_default,
-        'password': password_default,
-        'port': port_default
-        }
+smtp = {
+    'server': config.get('DEFAULT', 'SMTP_SERVEUR'),
+    'username': config.get('DEFAULT', 'SMTP_USERNAME'),
+    'password': config.get('DEFAULT', 'SMTP_PASSWORD'),
+    'port': config.getint('DEFAULT', 'SMTP_PORT')
+}
 
 
 def watch_env_file():
@@ -163,7 +153,7 @@ def update_time_remaining_label():
     if heur_rappel.days == 0 and heur_rappel.seconds == 0:
         next_month_day = calculate_next_month_day()
         query_thread()
-        time_until_next_month_day = next_month_day - datetime.now()
+        time_until_next_month_day = next_month_day - datetime.datetime.now()
         days = time_until_next_month_day.days
         hours = time_until_next_month_day.seconds // 3600
         minutes = (time_until_next_month_day.seconds // 60) % 60
@@ -211,82 +201,118 @@ def update_config():
     # Create labels and entry fields to display and modify the config data
     server_label = ttk.Label(config_frame, text="SMTP Serveur:")
     server_entry = ttk.Entry(config_frame)
-    server_entry.insert(tk.END, smtp['server'])
+    server_entry.insert(tk.END, os.getenv('SMTP_SERVEUR'))
 
     username_label = ttk.Label(config_frame, text="SMTP Username:")
     username_entry = ttk.Entry(config_frame)
-    username_entry.insert(tk.END, smtp['username'])
+    username_entry.insert(tk.END, os.getenv('SMTP_USERNAME'))
 
     password_label = ttk.Label(config_frame, text="SMTP Password:")
     password_entry = ttk.Entry(config_frame, show="*")
-    password_entry.insert(tk.END, smtp['password'])
+    password_entry.insert(tk.END, os.getenv('SMTP_PASSWORD'))
 
     port_label = ttk.Label(config_frame, text="SMTP Port:")
     port_entry = ttk.Entry(config_frame)
-    port_entry.insert(tk.END, smtp['port'])
+    port_entry.insert(tk.END, os.getenv('SMTP_PORT'))
 
     # Entry fields for [SETTINGS] section
     set_hour_label = ttk.Label(config_frame, text="Heure:")
     set_hour_entry = ttk.Entry(config_frame)
-    set_hour_entry.insert(tk.END, config.get('SETTINGS', 'set_hour'))
+    set_hour_entry.insert(tk.END, os.getenv('SET_HOUR'))
 
     set_minute_label = ttk.Label(config_frame, text="Minute:")
     set_minute_entry = ttk.Entry(config_frame)
-    set_minute_entry.insert(tk.END, config.get('SETTINGS', 'set_minute'))
+    set_minute_entry.insert(tk.END, os.getenv('SET_MINUTE'))
 
     set_second_label = ttk.Label(config_frame, text="Seconde:")
     set_second_entry = ttk.Entry(config_frame)
-    set_second_entry.insert(tk.END, config.get('SETTINGS', 'set_second'))
+    set_second_entry.insert(tk.END, os.getenv('SET_SECOND'))
 
     set_microsecond_label = ttk.Label(config_frame, text="Microseconde:")
     set_microsecond_entry = ttk.Entry(config_frame)
-    set_microsecond_entry.insert(tk.END, config.get('SETTINGS', 'set_microsecond'))
+    set_microsecond_entry.insert(tk.END, os.getenv('SET_MICROSECOND'))
 
     set_day_label = ttk.Label(config_frame, text="Jour:")
     set_day_entry = ttk.Entry(config_frame)
-    set_day_entry.insert(tk.END, config.get('SETTINGS', 'set_day'))
+    set_day_entry.insert(tk.END, os.getenv('SET_DAY'))
 
     # Entry fields for [USER] section
     recipient_label = ttk.Label(config_frame, text="Recipient:")
     recipient_entry = ttk.Entry(config_frame)
-    recipient_entry.insert(tk.END, config.get('USER', 'RECIPIENT'))
+    recipient_entry.insert(tk.END, os.getenv('RECIPIENT'))
 
     # Entry fields for [LOCAL] section
     database_name_label = ttk.Label(config_frame, text="Nom de la base de données:")
     database_name_entry = ttk.Entry(config_frame)
-    database_name_entry.insert(tk.END, config.get('LOCAL', 'DATABASE_NAME'))
+    database_name_entry.insert(tk.END, os.getenv('DATABASE_NAME'))
+
+    def validate_int_input(input_str):
+        try:
+            int(input_str)
+            return True
+        except ValueError:
+            return False
+
+    def validate_config_values():
+        # Validate the integer values in the [SETTINGS] section
+        if not validate_int_input(set_hour_entry.get()):
+            messagebox.showerror("Error", "Heure doit être un entier.")
+            return False
+
+        if not validate_int_input(set_minute_entry.get()):
+            messagebox.showerror("Error", "Minute doit être un entier.")
+            return False
+
+        if not validate_int_input(set_second_entry.get()):
+            messagebox.showerror("Error", "Seconde doit être un entier.")
+            return False
+
+        if not validate_int_input(set_microsecond_entry.get()):
+            messagebox.showerror("Error", "Microseconde doit être un entier.")
+            return False
+
+        if not validate_int_input(set_day_entry.get()):
+            messagebox.showerror("Error", "Jour doit être un entier.")
+            return False
+
+        return True
 
     # Function to save the modified data to the .env file
     def save_config():
         try:
-            config.set('DEFAULT', 'SMTP_SERVEUR', server_entry.get())
-            config.set('DEFAULT', 'SMTP_USERNAME', username_entry.get())
-            config.set('DEFAULT', 'SMTP_PASSWORD', password_entry.get())
-            config.set('DEFAULT', 'SMTP_PORT', port_entry.get())
+            # Validate the input values before saving
+            if not validate_config_values():
+                return
+
+            # Update the environment variables with the new values
+            os.environ['SMTP_SERVEUR'] = server_entry.get()
+            os.environ['SMTP_USERNAME'] = username_entry.get()
+            os.environ['SMTP_PASSWORD'] = password_entry.get()
+            os.environ['SMTP_PORT'] = port_entry.get()
 
             # Save the new settings in the [SETTINGS] section
-            config.set('SETTINGS', 'set_hour', set_hour_entry.get())
-            config.set('SETTINGS', 'set_minute', set_minute_entry.get())
-            config.set('SETTINGS', 'set_second', set_second_entry.get())
-            config.set('SETTINGS', 'set_microsecond', set_microsecond_entry.get())
-            config.set('SETTINGS', 'set_day', set_day_entry.get())
+            os.environ['SET_HOUR'] = set_hour_entry.get()
+            os.environ['SET_MINUTE'] = set_minute_entry.get()
+            os.environ['SET_SECOND'] = set_second_entry.get()
+            os.environ['SET_MICROSECOND'] = set_microsecond_entry.get()
+            os.environ['SET_DAY'] = set_day_entry.get()
 
             # Save the new recipient in the [USER] section
-            config.set('USER', 'RECIPIENT', recipient_entry.get())
+            os.environ['RECIPIENT'] = recipient_entry.get()
 
             # Save the new database name in the [LOCAL] section
-            config.set('LOCAL', 'DATABASE_NAME', database_name_entry.get())
+            os.environ['DATABASE_NAME'] = database_name_entry.get()
 
-            with open(env_file, 'w') as configfile:
-                config.write(configfile)
-
-            # Mettez à jour toutes les données après avoir sauvegardé les configurations
-            refresh_all_data()
-
-            config_popup.destroy()  # Close the popup after saving
             messagebox.showinfo("Success", "Configurations saved successfully.")
+
+            # Close the configuration popup window
+            config_popup.destroy()
+
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred while saving configurations: {str(e)}")
+
+            # Close the configuration popup window
+            config_popup.destroy()
 
     # Create a save button to save the changes
     save_button = ttk.Button(config_frame, text="Enregistrer", command=save_config)
@@ -331,26 +357,6 @@ def update_config():
     save_button.grid(row=11, column=0, columnspan=2, pady=10)
 
 
-def refresh_all_data():
-    # Mettez à jour toutes les données nécessaires à partir du fichier .env
-    load_dotenv()
-
-    global set_hour, set_minute, set_second, set_microsecond, set_day
-
-    set_hour = int(os.getenv("SET_HOUR", 11))
-    set_minute = int(os.getenv("SET_MINUTE", 30))
-    set_second = int(os.getenv("SET_SECOND", 0))
-    set_microsecond = int(os.getenv("SET_MICROSECOND", 0))
-    set_day = int(os.getenv("SET_DAY", 25))
-
-    # Vous pouvez également mettre à jour d'autres données à partir du fichier .env si nécessaire
-
-    window.after(1000, calculate_time_remaining)
-    window.after(1000, calculate_next_month_day)
-    window.after(1000, update_time_remaining_label)
-    window.after(1000, update_history_table)
-
-
 if __name__ == "__main__":
     window = tk.Tk()
     window.title("Programme d'envoi de données")
@@ -372,33 +378,46 @@ if __name__ == "__main__":
                                          'border': '2'})],
                                     'border': '2'})])
 
-    content_frame = ttk.Frame(window, padding=20)
-    content_frame.pack(fill=tk.BOTH, expand=True)
+    # Create a frame for the header
+    header_frame = ttk.Frame(window)
+    header_frame.pack(fill=tk.X, pady=10)
 
-    # Create the colored label using the 'Custom.TLabel.Colored' style
-    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", font=('Helvetica', 20),
+    # Load your company logo and add it to the header
+    logo_img = Image.open("logo-inviso.ico")  # Replace "path_to_your_logo.png" with the path to your logo
+    logo_img = logo_img.resize((70, 70), Image.LANCZOS)  # Resize the logo as needed
+    logo_img = ImageTk.PhotoImage(logo_img)
+
+    logo_label = ttk.Label(header_frame, image=logo_img)
+    logo_label.pack(side=tk.LEFT, padx=10)
+
+    # Create a frame to hold the "Execute" and "Config" buttons
+    buttons_frame = ttk.Frame(header_frame)
+    buttons_frame.pack(side=tk.RIGHT, padx=10)
+
+    # Load the icons for buttons
+    execute_icon_img = Image.open("execute_icon.png")  # Replace with the path to your execute icon
+    execute_icon_img = execute_icon_img.resize((30, 30), Image.LANCZOS)  # Use Image.LANCZOS instead of Image.ANTIALIAS
+    execute_icon = ImageTk.PhotoImage(execute_icon_img)
+
+    config_icon_img = Image.open("config_icon.png")  # Replace with the path to your config icon
+    config_icon_img = config_icon_img.resize((30, 30), Image.LANCZOS)  # Use Image.LANCZOS instead of Image.ANTIALIAS
+    config_icon = ImageTk.PhotoImage(config_icon_img)
+
+    # Bouton pour exécuter le script
+    execute_button = ttk.Button(buttons_frame, command=query_thread, image=execute_icon, style='Custom.TButton')
+    execute_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+    # Create a "Config" button to modify the configurations
+    config_button = ttk.Button(buttons_frame, command=update_config, image=config_icon, style='Custom.TButton')
+    config_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+    # Create the colored label using the 'Custom.TLabel.Colored' style for the timer section
+    time_remaining_label = ttk.Label(window, text="Envoi de Mail Automatique", font=('Helvetica', 20),
                                      style='Custom.TLabel.Colored')
     time_remaining_label.pack(pady=10)
 
-    # Load the icons for buttons
-    execute_icon = Image.open("execute_icon.png")  # Replace with the path to your execute icon
-    execute_icon = execute_icon.resize((30, 30), Image.LANCZOS)  # Use Image.LANCZOS instead of Image.ANTIALIAS
-    execute_icon = ImageTk.PhotoImage(execute_icon)
-
-    config_icon = Image.open("config_icon.png")  # Replace with the path to your config icon
-    config_icon = config_icon.resize((30, 30), Image.LANCZOS)  # Use Image.LANCZOS instead of Image.ANTIALIAS
-    config_icon = ImageTk.PhotoImage(config_icon)
-
-    # Bouton pour exécuter le script
-    execute_button = ttk.Button(content_frame, command=query_thread, image=execute_icon, style='Custom.TButton')
-    execute_button.pack(side=tk.TOP, padx=10, pady=10)
-
-    # Create a "Config" button to modify the configurations
-    config_button = ttk.Button(content_frame, command=update_config, image=config_icon, style='Custom.TButton')
-    config_button.pack(side=tk.TOP, padx=10, pady=10)
-
     # Create a Treeview widget to display the history table
-    history_tree = ttk.Treeview(content_frame, columns=("Date", "Heure", "Email", "Donnée", "Statut"), show="headings",
+    history_tree = ttk.Treeview(window, columns=("Date", "Heure", "Email", "Donnée", "Statut"), show="headings",
                                 style='Custom.Treeview')
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
     history_tree.heading("Heure", text="Heure", anchor=tk.CENTER)
@@ -407,7 +426,7 @@ if __name__ == "__main__":
     history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)
 
     # Add a vertical scrollbar to the right of the table
-    scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=history_tree.yview)
+    scrollbar = ttk.Scrollbar(window, orient="vertical", command=history_tree.yview)
     history_tree.configure(yscrollcommand=scrollbar.set)
 
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
