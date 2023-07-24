@@ -194,7 +194,7 @@ if __name__ == "__main__":
     style.configure('Custom.TLabel.Colored', font=('Helvetica', 20), padding=10, background='#008080', foreground='white')
 
     # Create the colored label
-    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel.Colored')
+    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", font=('Helvetica', 20))
     time_remaining_label.pack(pady=10)
 
     # Bouton pour exécuter le script
