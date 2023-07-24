@@ -172,6 +172,7 @@ def query_thread():
     query.start()
 
 
+
 if __name__ == "__main__":
     window = tk.Tk()
     window.title("Programme d'envoi de données")
@@ -183,18 +184,22 @@ if __name__ == "__main__":
     style.configure('Custom.TButton', font=('Helvetica', 16), padding=10)
     style.configure('Custom.Treeview', font=('Helvetica', 12))
     style.configure('Custom.Treeview.Heading', font=('Helvetica', 14, 'bold'), background='#dcdcdc', foreground='black')
-
-    # Set custom colors
     window.configure(background='#f0f0f0')  # Set window background color
+    style.configure('Custom.Treeview', background='#f0f0f0')  # Set Treeview background color
+
+    # Define the layout for the 'Custom.TLabel.Colored' style
+    style.layout('Custom.TLabel.Colored',
+                 [('Label.border', {'sticky': 'nswe', 'children':
+                                    [('Label.padding', {'sticky': 'nswe', 'children':
+                                                       [('Label.label', {'sticky': 'nswe'})],
+                                                       'border': '2'})],
+                                    'border': '2'})])
 
     content_frame = ttk.Frame(window, padding=20)
     content_frame.pack(fill=tk.BOTH, expand=True)
 
-    # Create a custom style for the colored label
-    style.configure('Custom.TLabel.Colored', font=('Helvetica', 20), padding=10, background='#008080', foreground='white')
-
-    # Create the colored label
-    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique")
+    # Create the colored label using the 'Custom.TLabel.Colored' style
+    time_remaining_label = ttk.Label(content_frame, text="Envoi de Mail Automatique", style='Custom.TLabel.Colored')
     time_remaining_label.pack(pady=10)
 
     # Bouton pour exécuter le script
@@ -212,7 +217,6 @@ if __name__ == "__main__":
 
     # Call the function to update the label and history table periodically
     update_label_periodically()
-
 
     # Call the function to update the history table periodically
     update_history_table()
