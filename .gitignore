@@ -5,3 +5,4 @@ __pycache__/*
 DB_TEST.sqlite3
 data/*
 output/*
+output
