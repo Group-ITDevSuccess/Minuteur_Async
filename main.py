@@ -11,7 +11,6 @@ from func.utils import calculate_next_month_day, calculate_time_remaining, EnvFi
 from func.execute_query import execute_sql_query
 from func.export_to_excel import export_to_excel
 from func.send_email import send_email_with_attachment
-from data_send import data_sent_email
 from dotenv import load_dotenv
 
 from watchdog.observers import Observer
