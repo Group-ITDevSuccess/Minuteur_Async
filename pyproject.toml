@@ -10,6 +10,7 @@ packages = [{include = "2 _ minuteur_async"}]
 python = "^3.10"
 pandas = "^2.0.2"
 et-xmlfile = "^1.1.0"
+pillow = "^10.0.0"
 
 
 [build-system]

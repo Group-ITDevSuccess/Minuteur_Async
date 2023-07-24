@@ -46,7 +46,7 @@ def send_email_with_attachment(objet, filename, recipients, smtp, local_db):
         print(f"Message sent to {recipients}")
     except Exception as e:
         # En cas d'erreur, enregistrez le statut "Non envoyé" dans la table de l'historique
-        conn = sqlite3.connect('./DB_TEST.sqlite3')
+        conn = sqlite3.connect(local_db)
         cursor = conn.cursor()
         date = datetime.datetime.now().strftime("%Y-%m-%d")
         time = datetime.datetime.now().time()

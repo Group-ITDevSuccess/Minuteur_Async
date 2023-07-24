@@ -15,7 +15,7 @@ from data_send import data_sent_email
 from dotenv import load_dotenv
 
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+from PIL import Image, ImageTk
 
 # Chemin du fichier .env
 env_file = '.env'
@@ -42,7 +42,6 @@ smtp = {'server': server_default,
         }
 
 
-
 def watch_env_file():
     calculate_time_remaining()
     calculate_next_month_day()
@@ -53,7 +52,6 @@ def watch_env_file():
     observer = Observer()
     observer.schedule(event_handler, path='.', recursive=False)
     observer.start()
-
 
 
 def create_historique_table():
@@ -383,13 +381,22 @@ if __name__ == "__main__":
                                      style='Custom.TLabel.Colored')
     time_remaining_label.pack(pady=10)
 
+    # Load the icons for buttons
+    execute_icon = Image.open("execute_icon.png")  # Replace with the path to your execute icon
+    execute_icon = execute_icon.resize((30, 30), Image.LANCZOS)  # Use Image.LANCZOS instead of Image.ANTIALIAS
+    execute_icon = ImageTk.PhotoImage(execute_icon)
+
+    config_icon = Image.open("config_icon.png")  # Replace with the path to your config icon
+    config_icon = config_icon.resize((30, 30), Image.LANCZOS)  # Use Image.LANCZOS instead of Image.ANTIALIAS
+    config_icon = ImageTk.PhotoImage(config_icon)
+
     # Bouton pour exécuter le script
-    execute_button = ttk.Button(content_frame, text="Exécuter le script", command=query_thread, style='Custom.TButton')
-    execute_button.pack(pady=10)
+    execute_button = ttk.Button(content_frame, command=query_thread, image=execute_icon, style='Custom.TButton')
+    execute_button.pack(side=tk.TOP, padx=10, pady=10)
 
     # Create a "Config" button to modify the configurations
-    config_button = ttk.Button(content_frame, text="Configuration", command=update_config, style='Custom.TButton')
-    config_button.pack(pady=10)
+    config_button = ttk.Button(content_frame, command=update_config, image=config_icon, style='Custom.TButton')
+    config_button.pack(side=tk.TOP, padx=10, pady=10)
 
     # Create a Treeview widget to display the history table
     history_tree = ttk.Treeview(content_frame, columns=("Date", "Heure", "Email", "Donnée", "Statut"), show="headings",
@@ -405,13 +412,11 @@ if __name__ == "__main__":
     history_tree.configure(yscrollcommand=scrollbar.set)
 
     history_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-    scrollbar.place(relx=1, rely=0, relheight=1)  # Place the scrollbar on the right side
+
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)  # Use pack for the scrollbar
 
     # Set a custom background color for the window
     window.configure(bg='#ffffff')
-
-    # Set a window icon (change 'icon.ico' to the path of your icon file)
-    # set_window_icon(window, 'logo-inviso.ico')
 
     # Call the function to update the label and history table periodically
     update_label_periodically()
