@@ -1,50 +1,41 @@
 import sqlite3
+import os
 
-# Les données du fichier .env
-data = {
-    "DEFAULT": {
-        "smtp_username": "muriel.raharison@inviso-group.com",
-        "smtp_password": "DzczeHgosm",
-        "smtp_serveur": "mail.inviso-group.com",
-        "smtp_port": "587"
-    },
-    "LOCAL": {
-        "database_name": "DB_TEST.sqlite3"
-    },
-    "SETTINGS": {
-        "set_hour": "10",
-        "set_minute": "30",
-        "set_second": "45",
-        "set_microsecond": "0",
-        "set_day": "25"
-    },
-    "MAIL": {
-        "objet": "Mon Mail Objet",
-        "message": "Mon Message"
-    }
-}
+database_path = os.path.join(os.path.dirname(__file__), 'DB_TEST.sqlite3')
 
 
-# Fonction pour créer la table si elle n'existe pas et insérer les données dans la table SQLite
-def create_and_insert_data_into_table(data):
-    with sqlite3.connect("env_data.db") as conn:
+def create_configuration_table():
+    with sqlite3.connect(database_path) as conn:
         cursor = conn.cursor()
 
-        # Créer la table si elle n'existe pas
-        cursor.execute('''CREATE TABLE IF NOT EXISTS env_data (
-                            id INTEGER PRIMARY KEY,
-                            type TEXT NOT NULL,
-                            key TEXT NOT NULL,
-                            value TEXT NOT NULL
-                          )''')
+        # Create the 'Configuration' table with 'key' and 'value' columns
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS Configuration (
+                key_value TEXT PRIMARY KEY,
+                valeur TEXT
+            )
+        """)
 
-        for env_type, env_data in data.items():
-            for key, value in env_data.items():
-                cursor.execute("INSERT INTO env_data (type, key, value) VALUES (?, ?, ?)",
-                               (env_type, key, value))
+        # Insert the provided configuration values into the 'Configuration' table
+        config_values = [
+            ('smtp_username', 'muriel.raharison@inviso-group.com'),
+            ('smtp_password', 'DzczeHgosm'),
+            ('smtp_serveur', 'mail.inviso-group.com'),
+            ('smtp_port', '587'),
+            ('database_name', 'DB_TEST.sqlite3'),
+            ('set_hour', '10'),
+            ('set_minute', '30'),
+            ('set_second', '45'),
+            ('set_microsecond', '0'),
+            ('set_day', '25'),
+            ('objet', 'Mon Mail Objet'),
+            ('message', 'Mon Message')
+        ]
+
+        cursor.executemany("INSERT OR REPLACE INTO Configuration (key_value, valeur) VALUES (?, ?)", config_values)
 
         conn.commit()
 
 
-# Appel de la fonction pour créer la table et insérer les données
-create_and_insert_data_into_table(data)
+if __name__ == "__main__":
+    create_configuration_table()

@@ -1,39 +1,43 @@
 import calendar
 import datetime
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-
+import sqlite3
 import os
-from dotenv import load_dotenv
-
-# Get the absolute path to the .env file
-env_file = os.path.abspath('.env')
-
-# Load the environment variables from the .env file
-load_dotenv(env_file)
 
 
-def get_env_variable(key, default=None):
-    return os.getenv(key, default)
+def get_key(key, default_value=None):
+    database_path = os.path.join(os.path.dirname(__file__), 'DB_TEST.sqlite3')
+    with sqlite3.connect(database_path) as conn:
+        cursor = conn.cursor()
+
+        # Fetch the value of the key from the 'Configuration' table
+        cursor.execute(f"SELECT * FROM Configuration WHERE key_value={key}")
+        result = cursor.fetchone()
+
+        if result:
+            print(result[0])
+            return result[0]
+        else:
+            # If the value is not found, return the default value or None
+            return default_value
 
 
 def update_config_from_env():
     global smtp_username, smtp_password, smtp_serveur, smtp_port, object_mail, message_mail
     global recipient, database_name, set_hour, set_minute, set_second, set_microsecond, set_day
 
-    object_mail = str(get_env_variable('objet'))
-    message_mail = str(get_env_variable('message'))
-    smtp_username = str(get_env_variable('smtp_username'))
-    smtp_password = str(get_env_variable('smtp_password'))
-    smtp_serveur = str(get_env_variable('smtp_serveur'))
-    smtp_port = int(get_env_variable('smtp_port'))
-    recipient = str(get_env_variable('recipient'))
-    database_name = str(get_env_variable('database_name'))
-    set_hour = int(get_env_variable('set_hour'))
-    set_minute = int(get_env_variable('set_minute'))
-    set_second = int(get_env_variable('set_second'))
-    set_microsecond = int(get_env_variable('set_microsecond'))
-    set_day = int(get_env_variable('set_day'))
+    object_mail = str(get_key('objet'))
+    message_mail = str(get_key('message'))
+    smtp_username = str(get_key('smtp_username'))
+    smtp_password = str(get_key('smtp_password'))
+    smtp_serveur = str(get_key('smtp_serveur'))
+    smtp_port = int(get_key('smtp_port'))
+    recipient = str(get_key('recipient'))
+    database_name = str(get_key('database_name'))
+    set_hour = int(get_key('set_hour'))
+    set_minute = int(get_key('set_minute'))
+    set_second = int(get_key('set_second'))
+    set_microsecond = int(get_key('set_microsecond'))
+    set_day = int(get_key('set_day'))
 
 
 def now():
@@ -108,25 +112,3 @@ def calculate_next_month_day():
             date_heur_prochaine = date_heur_prochaine.replace(day=1, month=mois_suivant, year=year_actuel)
 
     return date_heur_prochaine
-
-
-class EnvFileHandler(FileSystemEventHandler):
-    def on_modified(self, event):
-        if event.src_path == env_file:
-            # Re-load the environment variables from the .env file
-            load_dotenv(env_file)
-            update_config_from_env()
-
-
-def watch_env_file():
-    event_handler = EnvFileHandler()
-    observer = Observer()
-    observer.schedule(event_handler, path='.', recursive=False)
-    observer.start()
-
-
-# Update the configuration from the environment variables at the start
-update_config_from_env()
-
-# Call the function to start watching the .env file for changes
-watch_env_file()
