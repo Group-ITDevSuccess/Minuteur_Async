@@ -4,13 +4,14 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 import os
-from dotenv import load_dotenv
+import configparser
 
-# Get the absolute path to the .env file
-env_file = os.path.abspath('.env')
+# Chemin du fichier config.ini
+config_file = 'config.ini'
 
-# Load the environment variables from the .env file
-load_dotenv(env_file)
+# Charger les variables d'environnement à partir du fichier config.ini
+config = configparser.ConfigParser()
+config.read(config_file)
 
 
 def get_env_variable(key, default=None):
@@ -21,17 +22,16 @@ def update_config_from_env():
     global smtp_username, smtp_password, smtp_serveur, smtp_port
     global recipient, database_name, set_hour, set_minute, set_second, set_microsecond, set_day
 
-    smtp_username = get_env_variable('smtp_username')
-    smtp_password = get_env_variable('smtp_password')
-    smtp_serveur = get_env_variable('smtp_serveur')
-    smtp_port = int(get_env_variable('smtp_port'))
-    recipient = get_env_variable('recipient')
-    database_name = get_env_variable('database_name')
-    set_hour = int(get_env_variable('set_hour'))
-    set_minute = int(get_env_variable('set_minute'))
-    set_second = int(get_env_variable('set_second'))
-    set_microsecond = int(get_env_variable('set_microsecond'))
-    set_day = int(get_env_variable('set_day'))
+    smtp_username = config.get('DEFAULT', 'SMTP_USERNAME')
+    smtp_password = config.get('DEFAULT', 'SMTP_PASSWORD')
+    smtp_serveur = config.get('DEFAULT', 'SMTP_SERVEUR')
+    smtp_port = config.getint('DEFAULT', 'SMTP_PORT')
+    database_name = config.get('LOCAL', 'DATABASE_NAME')
+    set_hour = config.getint('SETTINGS', 'SET_HOUR')
+    set_minute = config.getint('SETTINGS', 'SET_MINUTE')
+    set_second = config.getint('SETTINGS', 'SET_SECOND')
+    set_microsecond = config.getint('SETTINGS', 'SET_MICROSECOND')
+    set_day = config.getint('SETTINGS', 'SET_DAY')
 
 
 def now():
@@ -110,9 +110,9 @@ def calculate_next_month_day():
 
 class EnvFileHandler(FileSystemEventHandler):
     def on_modified(self, event):
-        if event.src_path == env_file:
-            # Re-load the environment variables from the .env file
-            load_dotenv(env_file)
+        if event.src_path == config_file:
+            # Re-load the environment variables from the config.ini file
+            config.read(config_file)
             update_config_from_env()
 
 

@@ -13,12 +13,12 @@ from func.send_email import send_email_with_attachment
 from watchdog.observers import Observer
 from PIL import Image, ImageTk
 
-# Chemin du fichier .env
-env_file = '.env'
+# Chemin du fichier config.ini
+config_file = 'config.ini'
 
-# Charger les variables d'environnement à partir du fichier .env
+# Charger les variables d'environnement à partir du fichier config.ini
 config = configparser.ConfigParser()
-config.read(env_file)
+config.read(config_file)
 
 database_name = config.get('LOCAL', 'DATABASE_NAME')
 database_path = os.path.join(os.path.dirname(__file__), database_name)
@@ -200,45 +200,46 @@ def update_config():
     # Create labels and entry fields to display and modify the config data
     server_label = ttk.Label(config_frame, text="SMTP Serveur:")
     server_entry = ttk.Entry(config_frame)
-    server_entry.insert(tk.END, os.getenv('SMTP_SERVEUR'))
+    server_entry.insert(tk.END, config.get('DEFAULT', 'SMTP_SERVEUR'))  # Utilisez config.get pour obtenir la valeur
 
+    # Les autres champs d'entrée doivent également être mis à jour de la même manière
     username_label = ttk.Label(config_frame, text="SMTP Username:")
     username_entry = ttk.Entry(config_frame)
-    username_entry.insert(tk.END, os.getenv('SMTP_USERNAME'))
+    username_entry.insert(tk.END, config.get('DEFAULT', 'SMTP_USERNAME'))
 
     password_label = ttk.Label(config_frame, text="SMTP Password:")
     password_entry = ttk.Entry(config_frame, show="*")
-    password_entry.insert(tk.END, os.getenv('SMTP_PASSWORD'))
+    password_entry.insert(tk.END, config.get('DEFAULT', 'SMTP_PASSWORD'))
 
     port_label = ttk.Label(config_frame, text="SMTP Port:")
     port_entry = ttk.Entry(config_frame)
-    port_entry.insert(tk.END, os.getenv('SMTP_PORT'))
+    port_entry.insert(tk.END, config.get('DEFAULT', 'SMTP_PORT'))
 
     # Entry fields for [SETTINGS] section
     set_hour_label = ttk.Label(config_frame, text="Heure:")
     set_hour_entry = ttk.Entry(config_frame)
-    set_hour_entry.insert(tk.END, os.getenv('SET_HOUR'))
+    set_hour_entry.insert(tk.END, config.get('SETTINGS', 'SET_HOUR'))
 
     set_minute_label = ttk.Label(config_frame, text="Minute:")
     set_minute_entry = ttk.Entry(config_frame)
-    set_minute_entry.insert(tk.END, os.getenv('SET_MINUTE'))
+    set_minute_entry.insert(tk.END, config.get('SETTINGS', 'SET_MINUTE'))
 
     set_second_label = ttk.Label(config_frame, text="Seconde:")
     set_second_entry = ttk.Entry(config_frame)
-    set_second_entry.insert(tk.END, os.getenv('SET_SECOND'))
+    set_second_entry.insert(tk.END, config.get('SETTINGS', 'SET_SECOND'))
 
     set_microsecond_label = ttk.Label(config_frame, text="Microseconde:")
     set_microsecond_entry = ttk.Entry(config_frame)
-    set_microsecond_entry.insert(tk.END, os.getenv('SET_MICROSECOND'))
+    set_microsecond_entry.insert(tk.END, config.get('SETTINGS', 'SET_MICROSECOND'))
 
     set_day_label = ttk.Label(config_frame, text="Jour:")
     set_day_entry = ttk.Entry(config_frame)
-    set_day_entry.insert(tk.END, os.getenv('SET_DAY'))
+    set_day_entry.insert(tk.END, config.get('SETTINGS', 'SET_DAY'))
 
     # Entry fields for [LOCAL] section
     database_name_label = ttk.Label(config_frame, text="Nom de la base de données:")
     database_name_entry = ttk.Entry(config_frame)
-    database_name_entry.insert(tk.END, os.getenv('DATABASE_NAME'))
+    database_name_entry.insert(tk.END, config.get('LOCAL', 'DATABASE_NAME'))
 
     def validate_int_input(input_str):
         try:
@@ -278,21 +279,29 @@ def update_config():
             if not validate_config_values():
                 return
 
-            # Update the environment variables with the new values
-            os.environ['SMTP_SERVEUR'] = server_entry.get()
-            os.environ['SMTP_USERNAME'] = username_entry.get()
-            os.environ['SMTP_PASSWORD'] = password_entry.get()
-            os.environ['SMTP_PORT'] = port_entry.get()
+            # Update the config object with the new values
+            config['DEFAULT'] = {
+                'SMTP_SERVEUR': server_entry.get(),
+                'SMTP_USERNAME': username_entry.get(),
+                'SMTP_PASSWORD': password_entry.get(),
+                'SMTP_PORT': port_entry.get(),
+            }
 
-            # Save the new settings in the [SETTINGS] section
-            os.environ['SET_HOUR'] = set_hour_entry.get()
-            os.environ['SET_MINUTE'] = set_minute_entry.get()
-            os.environ['SET_SECOND'] = set_second_entry.get()
-            os.environ['SET_MICROSECOND'] = set_microsecond_entry.get()
-            os.environ['SET_DAY'] = set_day_entry.get()
+            config['SETTINGS'] = {
+                'SET_HOUR': set_hour_entry.get(),
+                'SET_MINUTE': set_minute_entry.get(),
+                'SET_SECOND': set_second_entry.get(),
+                'SET_MICROSECOND': set_microsecond_entry.get(),
+                'SET_DAY': set_day_entry.get(),
+            }
 
-            # Save the new database name in the [LOCAL] section
-            os.environ['DATABASE_NAME'] = database_name_entry.get()
+            config['LOCAL'] = {
+                'DATABASE_NAME': database_name_entry.get(),
+            }
+
+            # Save the new values in the config.ini file
+            with open(config_file, 'w') as configfile:
+                config.write(configfile)
 
             messagebox.showinfo("Success", "Configurations saved successfully.")
 
@@ -300,6 +309,7 @@ def update_config():
             config_popup.destroy()
 
         except Exception as e:
+            # Handle exceptions here
             messagebox.showerror("Error", f"An error occurred while saving configurations: {str(e)}")
 
             # Close the configuration popup window
