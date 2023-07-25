@@ -63,7 +63,6 @@ def export_to_excel(df, objet):
         cell.font = header_font
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
-
     # En-têtes pour les fournisseurs
     for col_index, header in enumerate(headers, start=1):
         cell = fournisseurs_sheet.cell(row=1, column=col_index, value=header)
@@ -213,7 +212,7 @@ def export_to_excel(df, objet):
             sheet.column_dimensions[column_cells[0].column_letter].width = length + 2
 
     # Sauvegarder le fichier Excel
-    filename = f"donnees_{objet}_{current_date}.xlsx"
+    filename = f"{objet}_{current_date}.xlsx"
     pathname = f"data/{filename}"
     workbook.save(pathname)
     return pathname

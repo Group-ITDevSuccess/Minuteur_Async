@@ -3,31 +3,29 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox as messagebox
 import threading
-import configparser
 import os
 import datetime
-from func.utils import calculate_next_month_day, calculate_time_remaining, EnvFileHandler
+from configparser import ConfigParser
+
+from dotenv import load_dotenv
+
+from func.utils import calculate_next_month_day, calculate_time_remaining, EnvFileHandler, get_env_variable
 from func.execute_query import execute_sql_query
 from func.export_to_excel import export_to_excel
 from func.send_email import send_email_with_attachment
 from watchdog.observers import Observer
 from PIL import Image, ImageTk
 
-# Chemin du fichier .env
-env_file = '.env'
-
-# Charger les variables d'environnement à partir du fichier .env
-config = configparser.ConfigParser()
-config.read(env_file)
-
-database_name = config.get('LOCAL', 'DATABASE_NAME')
+objet_mail = str(get_env_variable('objet'))
+message_mail = str(get_env_variable('message'))
+database_name = str(get_env_variable('database_name'))
 database_path = os.path.join(os.path.dirname(__file__), database_name)
 
 smtp = {
-    'server': config.get('DEFAULT', 'SMTP_SERVEUR'),
-    'username': config.get('DEFAULT', 'SMTP_USERNAME'),
-    'password': config.get('DEFAULT', 'SMTP_PASSWORD'),
-    'port': config.getint('DEFAULT', 'SMTP_PORT')
+    'server': str(get_env_variable('smtp_serveur')),
+    'username': str(get_env_variable('smtp_username')),
+    'password': str(get_env_variable('smtp_password')),
+    'port': int(get_env_variable('smtp_port'))
 }
 
 
@@ -50,6 +48,8 @@ def create_historique_table():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS Historique (
                 email TEXT,
+                objet TEXT,
+                message TEXT,
                 data TEXT,
                 date DATE,
                 time TIME,
@@ -89,8 +89,9 @@ def data_sent_email():
 
             df = execute_sql_query(base)
             filename = export_to_excel(df=df, objet=name)
-            send_email_with_attachment(objet=name, filename=filename, recipients=email, smtp=smtp,
-                                       local_db=database_path)
+            send_email_with_attachment(data=name, filename=filename, recipients=email, smtp=smtp,
+                                       local_db=database_path, objet_mail=objet_mail,
+                                       message_mail=message_mail)
 
         cursor.close()
         conn.close()
@@ -99,7 +100,7 @@ def data_sent_email():
 
     except Exception as e:
         # You can customize the error message as per your requirement
-        messagebox.showerror("Error", f"An error occurred: {str(e)} ")
+        messagebox.showerror("Error", f"An error occurred sending mail: {str(e)} ")
 
 
 def execute_script():
@@ -123,7 +124,7 @@ def update_history_table():
 
         # Fetch data from the 'Historique' table in descending order based on 'date' and 'time'
         cursor.execute("""
-            SELECT date, time, email, data, status FROM Historique
+            SELECT date, time, objet, email, message, data, status FROM Historique
             ORDER BY date DESC, time DESC
         """)
         rows = cursor.fetchall()
@@ -132,7 +133,7 @@ def update_history_table():
 
         for row in rows:
             # Rearrange the order of data to match the column order (Date, Heure, Email, Donnée)
-            data_in_order = [row[0], row[1], row[2], row[3], row[4]]
+            data_in_order = [row[0], row[1], row[2], row[3], row[4], row[5], row[6]]
             history_tree.insert("", "end", values=data_in_order)
 
         conn.close()
@@ -168,29 +169,17 @@ def update_time_remaining_label():
                                        format_time(days, hours, minutes, seconds)
 
 
-def get_unique_dates():
-    try:
-        conn = sqlite3.connect(database_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT DISTINCT date FROM Historique ORDER BY date DESC")
-        dates = cursor.fetchall()
-        conn.close()
-        return [date[0] for date in dates]
-    except sqlite3.Error as e:
-        messagebox.showerror("Error", f"An error occurred while fetching unique dates: {str(e)}")
-        return []
-
-
 def query_thread():
     query = threading.Thread(target=execute_script, args=())
     query.start()
 
 
 def update_config():
+    config_widgets = []
     # Create the popup window
+    # Calculate the total height required based on the number of widgets
     config_popup = tk.Toplevel(window)
     config_popup.title("Modifier les configurations")
-    config_popup.geometry("400x400")
     config_popup.resizable(False, False)
 
     # Create a frame for all the configuration widgets
@@ -198,6 +187,14 @@ def update_config():
     config_frame.pack(fill=tk.BOTH, expand=True)
 
     # Create labels and entry fields to display and modify the config data
+    objet_email_label = ttk.Label(config_frame, text="Objet du mail:")
+    objet_email_entry = ttk.Entry(config_frame)
+    objet_email_entry.insert(tk.END, os.getenv('OBJET'))
+
+    message_email_label = ttk.Label(config_frame, text="Message Email:")
+    message_email_entry = ttk.Entry(config_frame)
+    message_email_entry.insert(tk.END, os.getenv('MESSAGE'))
+
     server_label = ttk.Label(config_frame, text="SMTP Serveur:")
     server_entry = ttk.Entry(config_frame)
     server_entry.insert(tk.END, os.getenv('SMTP_SERVEUR'))
@@ -279,6 +276,9 @@ def update_config():
                 return
 
             # Update the environment variables with the new values
+            os.environ['objet'] = objet_email_entry.get()
+            os.environ['MESSAGE'] = message_email_entry.get()
+
             os.environ['SMTP_SERVEUR'] = server_entry.get()
             os.environ['SMTP_USERNAME'] = username_entry.get()
             os.environ['SMTP_PASSWORD'] = password_entry.get()
@@ -296,6 +296,20 @@ def update_config():
 
             messagebox.showinfo("Success", "Configurations saved successfully.")
 
+            # Get the absolute path to the .env file
+            env_file = os.path.abspath('.env')
+
+            # Load the environment variables from the .env file
+            load_dotenv(env_file)
+
+            # Charger les variables d'environnement à partir du fichier .env
+            config = ConfigParser()
+            config.read(env_file)
+
+            # Save the changes to the .env file
+            with open(env_file, 'w') as file:
+                config.write(file)
+
             # Close the configuration popup window
             config_popup.destroy()
 
@@ -309,6 +323,7 @@ def update_config():
     save_button = ttk.Button(config_frame, text="Enregistrer", command=save_config)
 
     # Grid layout for the popup widgets
+
     server_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
     server_entry.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
 
@@ -341,7 +356,28 @@ def update_config():
     database_name_label.grid(row=10, column=0, padx=10, pady=5, sticky="w")
     database_name_entry.grid(row=10, column=1, padx=10, pady=5, sticky="ew")
 
-    save_button.grid(row=11, column=0, columnspan=2, pady=10)
+    objet_email_label.grid(row=11, column=0, padx=10, pady=5, sticky="w")
+    objet_email_entry.grid(row=11, column=1, padx=10, pady=5, sticky="ew")
+
+    message_email_label.grid(row=12, column=0, padx=10, pady=5, sticky="w")
+    message_email_entry.grid(row=12, column=1, padx=10, pady=5, sticky="ew")
+
+    save_button.grid(row=13, column=0, columnspan=2, pady=10)
+
+    # Append each widget to the config_widgets list
+    config_widgets.extend([
+        server_label, server_entry, username_label, username_entry, password_label, password_entry,
+        port_label, port_entry, set_hour_label, set_hour_entry, set_minute_label, set_minute_entry,
+        set_second_label, set_second_entry, set_microsecond_label, set_microsecond_entry,
+        set_day_label, set_day_entry, database_name_label, database_name_entry,
+        objet_email_label, objet_email_entry, message_email_label, message_email_entry, save_button
+    ])
+
+    # Calculate the total height required based on the number of widgets
+    total_height = sum(widget.winfo_reqheight() for widget in config_widgets) + 30  # Add some extra padding
+
+    # Update the geometry of the popup window to adjust its height
+    config_popup.geometry(f"400x{total_height}")
 
 
 if __name__ == "__main__":
@@ -404,11 +440,13 @@ if __name__ == "__main__":
     time_remaining_label.pack(pady=10)
 
     # Create a Treeview widget to display the history table
-    history_tree = ttk.Treeview(window, columns=("Date", "Heure", "Email", "Donnée", "Statut"), show="headings",
-                                style='Custom.Treeview')
+    history_tree = ttk.Treeview(window, columns=("Date", "Heure", "Objet", "Email", "Message", "Donnée", "Statut"),
+                                show="headings", style='Custom.Treeview')
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
     history_tree.heading("Heure", text="Heure", anchor=tk.CENTER)
+    history_tree.heading("Objet", text="Objet", anchor=tk.CENTER)
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
+    history_tree.heading("Message", text="Message", anchor=tk.CENTER)
     history_tree.heading("Donnée", text="Donnée", anchor=tk.CENTER)
     history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)
 
@@ -425,8 +463,6 @@ if __name__ == "__main__":
 
     # Call the function to update the label and history table periodically
     update_label_periodically()
-
-    get_unique_dates()
 
     # Start the tkinter main loop
     window.mainloop()

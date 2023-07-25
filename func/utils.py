@@ -18,15 +18,17 @@ def get_env_variable(key, default=None):
 
 
 def update_config_from_env():
-    global smtp_username, smtp_password, smtp_serveur, smtp_port
+    global smtp_username, smtp_password, smtp_serveur, smtp_port, object_mail, message_mail
     global recipient, database_name, set_hour, set_minute, set_second, set_microsecond, set_day
 
-    smtp_username = get_env_variable('smtp_username')
-    smtp_password = get_env_variable('smtp_password')
-    smtp_serveur = get_env_variable('smtp_serveur')
+    object_mail = str(get_env_variable('objet'))
+    message_mail = str(get_env_variable('message'))
+    smtp_username = str(get_env_variable('smtp_username'))
+    smtp_password = str(get_env_variable('smtp_password'))
+    smtp_serveur = str(get_env_variable('smtp_serveur'))
     smtp_port = int(get_env_variable('smtp_port'))
-    recipient = get_env_variable('recipient')
-    database_name = get_env_variable('database_name')
+    recipient = str(get_env_variable('recipient'))
+    database_name = str(get_env_variable('database_name'))
     set_hour = int(get_env_variable('set_hour'))
     set_minute = int(get_env_variable('set_minute'))
     set_second = int(get_env_variable('set_second'))
