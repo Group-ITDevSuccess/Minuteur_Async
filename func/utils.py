@@ -1,10 +1,10 @@
 import calendar
 import datetime
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-
+import sqlite3
 import os
 import configparser
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 # Chemin du fichier config.ini
 config_file = 'config.ini'
@@ -14,12 +14,25 @@ config = configparser.ConfigParser()
 config.read(config_file)
 
 
-def get_env_variable(key, default=None):
-    return os.getenv(key, default)
+def get_key(key, default_value=None):
+    database_path = os.path.join(os.path.dirname(__file__), 'DB_TEST.sqlite3')
+    with sqlite3.connect(database_path) as conn:
+        cursor = conn.cursor()
+
+        # Fetch the value of the key from the 'Configuration' table
+        cursor.execute(f"SELECT * FROM Configuration WHERE key_value={key}")
+        result = cursor.fetchone()
+
+        if result:
+            print(result[0])
+            return result[0]
+        else:
+            # If the value is not found, return the default value or None
+            return default_value
 
 
 def update_config_from_env():
-    global smtp_username, smtp_password, smtp_serveur, smtp_port
+    global smtp_username, smtp_password, smtp_serveur, smtp_port, object_mail, message_mail
     global recipient, database_name, set_hour, set_minute, set_second, set_microsecond, set_day
 
     smtp_username = config.get('DEFAULT', 'SMTP_USERNAME')
@@ -106,7 +119,6 @@ def calculate_next_month_day():
             date_heur_prochaine = date_heur_prochaine.replace(day=1, month=mois_suivant, year=year_actuel)
 
     return date_heur_prochaine
-
 
 class EnvFileHandler(FileSystemEventHandler):
     def on_modified(self, event):

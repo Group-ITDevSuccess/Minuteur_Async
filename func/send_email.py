@@ -4,7 +4,7 @@ import datetime
 from email.message import EmailMessage
 
 
-def send_email_with_attachment(objet, filename, recipients, smtp, local_db):
+def send_email_with_attachment(data, filename, recipients, smtp, local_db, objet_mail, message_mail):
     try:
 
         # Vérifiez si les variables d'environnement sont définies
@@ -12,11 +12,11 @@ def send_email_with_attachment(objet, filename, recipients, smtp, local_db):
             raise ValueError("Les variables d'environnement doivent être définies.")
 
         message = EmailMessage()
-        message["Subject"] = f"Données de {objet}"
+        message["Subject"] = f"{objet_mail}, {data}"
         message["From"] = smtp.get('username')
         message["To"] = recipients  # Concaténer les adresses e-mail avec une virgule
 
-        message.set_content("Veuillez trouver ci-joint le fichier Excel contenant les résultats de la requête SQL.")
+        message.set_content(message_mail)
 
         with open(filename, "rb") as file:
             content = file.read()
@@ -36,14 +36,14 @@ def send_email_with_attachment(objet, filename, recipients, smtp, local_db):
 
         # Enregistrement du statut de l'envoi dans la table de l'historique
         cursor.execute("""
-            INSERT INTO Historique (email, data, date, time, status)
-            VALUES (?, ?, ?, ?, ?)
-        """, (str(recipients), str(objet), str(date), str(time), "Envoyé"))
+            INSERT INTO Historique (email, data, objet, message, date, time, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (str(recipients), str(data), str(objet_mail), str(message_mail), str(date), str(time), "Envoyé"))
 
         conn.commit()
         conn.close()
 
-        print(f"Message sent to {recipients}")
+        print(f"{objet_mail}, {recipients}")
     except Exception as e:
         # En cas d'erreur, enregistrez le statut "Non envoyé" dans la table de l'historique
         conn = sqlite3.connect(local_db)
@@ -52,9 +52,9 @@ def send_email_with_attachment(objet, filename, recipients, smtp, local_db):
         time = datetime.datetime.now().time()
 
         cursor.execute("""
-            INSERT INTO Historique (email, data, date, time, status)
-            VALUES (?, ?, ?, ?, ?)
-        """, (str(recipients), str(objet), str(date), str(time), "Non envoyé"))
+            INSERT INTO Historique (email, data, objet, message,  date, time, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (str(recipients), str(data), str(objet_mail), str(message_mail), str(date), str(time), "Non envoyé"))
 
         conn.commit()
         conn.close()
