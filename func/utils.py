@@ -1,50 +1,60 @@
 import calendar
 import datetime
-import sqlite3
-import os
 import configparser
-from watchdog.observers import Observer
+import os
+
 from watchdog.events import FileSystemEventHandler
-
-# Chemin du fichier config.ini
-config_file = 'config.ini'
-
-# Charger les variables d'environnement à partir du fichier config.ini
-config = configparser.ConfigParser()
-config.read(config_file)
+from watchdog.observers import Observer
 
 
-def get_key(key, default_value=None):
-    database_path = os.path.join(os.path.dirname(__file__), 'DB_TEST.sqlite3')
-    with sqlite3.connect(database_path) as conn:
-        cursor = conn.cursor()
-
-        # Fetch the value of the key from the 'Configuration' table
-        cursor.execute(f"SELECT * FROM Configuration WHERE key_value={key}")
-        result = cursor.fetchone()
-
-        if result:
-            print(result[0])
-            return result[0]
-        else:
-            # If the value is not found, return the default value or None
-            return default_value
+# Function to read the config.ini file and return the configparser object
+def read_config():
+    config = configparser.ConfigParser()
+    config_file = 'config.ini'
+    config.read(config_file)
+    return config
 
 
+# Function to write the config object back to the config.ini file
+def write_config(config):
+    config_file = 'config.ini'
+    with open(config_file, 'w') as configfile:
+        config.write(configfile)
+
+
+# Function to get environment variable from the config.ini file
+def get_env_variable(config, section, key):
+    # Check if the section and key exist
+    if section in config and key in config[section]:
+        return config[section][key]
+    return None
+
+
+# Function to update the config from environment variables
 def update_config_from_env():
-    global smtp_username, smtp_password, smtp_serveur, smtp_port, object_mail, message_mail
-    global recipient, database_name, set_hour, set_minute, set_second, set_microsecond, set_day
+    config = read_config()
 
-    smtp_username = config.get('DEFAULT', 'SMTP_USERNAME')
-    smtp_password = config.get('DEFAULT', 'SMTP_PASSWORD')
-    smtp_serveur = config.get('DEFAULT', 'SMTP_SERVEUR')
-    smtp_port = config.getint('DEFAULT', 'SMTP_PORT')
-    database_name = config.get('LOCAL', 'DATABASE_NAME')
-    set_hour = config.getint('SETTINGS', 'SET_HOUR')
-    set_minute = config.getint('SETTINGS', 'SET_MINUTE')
-    set_second = config.getint('SETTINGS', 'SET_SECOND')
-    set_microsecond = config.getint('SETTINGS', 'SET_MICROSECOND')
-    set_day = config.getint('SETTINGS', 'SET_DAY')
+    # Define the sections and keys to update from environment variables
+    sections_and_keys = [
+        ('DEFAULT', 'SMTP_USERNAME'),
+        ('DEFAULT', 'SMTP_PASSWORD'),
+        ('DEFAULT', 'SMTP_SERVEUR'),
+        ('DEFAULT', 'SMTP_PORT'),
+        ('LOCAL', 'RECIPIENT'),
+        ('LOCAL', 'DATABASE_NAME'),
+        ('SETTINGS', 'SET_HOUR'),
+        ('SETTINGS', 'SET_MINUTE'),
+        ('SETTINGS', 'SET_SECOND'),
+        ('SETTINGS', 'SET_MICROSECOND'),
+        ('SETTINGS', 'SET_DAY'),
+    ]
+
+    for section, key in sections_and_keys:
+        env_value = os.getenv(key)
+        if env_value is not None:
+            config[section][key] = env_value
+
+    write_config(config)
 
 
 def now():
@@ -69,19 +79,34 @@ def validate_string(value):
 
 
 def calculate_time_remaining():
+    config = read_config()
+    set_hour = validate_integer(get_env_variable(config, 'SETTINGS', 'SET_HOUR'))
+    set_minute = validate_integer(get_env_variable(config, 'SETTINGS', 'SET_MINUTE'))
+    set_second = validate_integer(get_env_variable(config, 'SETTINGS', 'SET_SECOND'))
+    set_microsecond = validate_integer(get_env_variable(config, 'SETTINGS', 'SET_MICROSECOND'))
+    set_day = validate_integer(get_env_variable(config, 'SETTINGS', 'SET_DAY'))
+
+    if None in (set_hour, set_minute, set_second, set_microsecond, set_day):
+        return None
+
     date_heur_actuel = now()
-    year_actuel = date_heur_actuel.year
-    mois_actuel = date_heur_actuel.month
-    jour_dans_mois_actuel = get_days_in_month(year_actuel, mois_actuel)
-    date_heur_prochaine = date_heur_actuel.replace(day=set_day, hour=set_hour, minute=set_minute,
-                                                   second=set_second, microsecond=set_microsecond)
+
+    date_heur_prochaine = date_heur_actuel.replace(
+        day=set_day,
+        hour=set_hour,
+        minute=set_minute,
+        second=set_second,
+        microsecond=set_microsecond
+    )
 
     if date_heur_actuel > date_heur_prochaine:
-        mois_suivant = mois_actuel + 1
+        mois_suivant = date_heur_actuel.month + 1
 
         if mois_suivant > 12:
             mois_suivant = 1
-            year_actuel += 1
+            year_actuel = date_heur_actuel.year + 1
+        else:
+            year_actuel = date_heur_actuel.year
 
         jours_dans_mois_suivant = get_days_in_month(year_actuel, mois_suivant)
 
@@ -95,22 +120,22 @@ def calculate_time_remaining():
 
 
 def calculate_next_month_day():
-    date_heur_actuel = now()
-    year_actuel = date_heur_actuel.year
-    mois_actuel = date_heur_actuel.month
-    jour_dans_mois_actuel = get_days_in_month(year_actuel, mois_actuel)
+    config = read_config()
+    set_day = validate_integer(get_env_variable(config, 'SETTINGS', 'SET_DAY'))
+    if set_day is None:
+        return None
 
-    # On calcule le jour suivant du 25 du mois actuel.
-    date_heur_prochaine = date_heur_actuel.replace(day=set_day, hour=set_hour, minute=set_minute,
-                                                   second=set_second, microsecond=set_microsecond)
+    date_heur_actuel = now()
+    date_heur_prochaine = date_heur_actuel.replace(day=set_day)
     date_heur_prochaine += datetime.timedelta(days=1)
 
-    # On avance au mois suivant en vérifiant si le jour 25 est valide dans ce mois.
     while date_heur_prochaine.day != set_day:
         mois_suivant = date_heur_prochaine.month + 1
         if mois_suivant > 12:
             mois_suivant = 1
-            year_actuel += 1
+            year_actuel = date_heur_prochaine.year + 1
+        else:
+            year_actuel = date_heur_prochaine.year
 
         jours_dans_mois_suivant = get_days_in_month(year_actuel, mois_suivant)
         if set_day <= jours_dans_mois_suivant:
@@ -120,11 +145,11 @@ def calculate_next_month_day():
 
     return date_heur_prochaine
 
+
 class EnvFileHandler(FileSystemEventHandler):
     def on_modified(self, event):
-        if event.src_path == config_file:
+        if event.src_path == 'config.ini':
             # Re-load the environment variables from the config.ini file
-            config.read(config_file)
             update_config_from_env()
 
 
@@ -134,9 +159,8 @@ def watch_env_file():
     observer.schedule(event_handler, path='.', recursive=False)
     observer.start()
 
+    # Update the configuration from environment variables at startup
+    update_config_from_env()
 
-# Update the configuration from the environment variables at the start
-update_config_from_env()
-
-# Call the function to start watching the .env file for changes
-watch_env_file()
+    # Call the function calculate_time_remaining here or at the appropriate place
+    calculate_time_remaining()
