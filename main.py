@@ -96,6 +96,9 @@ def data_sent_email():
                                        message_mail=message, recipients=email, smtp=smtp,
                                        local_db=database_path)
 
+            # Update the history table
+            update_history_table()
+
         cursor.close()
         conn.close()
 
@@ -117,6 +120,9 @@ def execute_script():
 
 
 def format_time(days, hours, minutes, seconds):
+    if minutes % 5 == 0:
+        # Update the history table
+        update_history_table()
     return f"{days} jours, {hours:02d} heures, {minutes:02d} minutes, {seconds:02d} secondes"
 
 
@@ -127,7 +133,7 @@ def update_history_table():
 
         # Fetch data from the 'Historique' table in descending order based on 'date' and 'time'
         cursor.execute("""
-            SELECT date, time, email, data, status FROM Historique
+            SELECT date, time, email, objet, message, data, status FROM Historique
             ORDER BY date DESC, time DESC
         """)
         rows = cursor.fetchall()
@@ -136,7 +142,7 @@ def update_history_table():
 
         for row in rows:
             # Rearrange the order of data to match the column order (Date, Heure, Email, Donnée)
-            data_in_order = [row[0], row[1], row[2], row[3], row[4]]
+            data_in_order = [row[0], row[1], row[2], row[3], row[4], row[5], row[6]]
             history_tree.insert("", "end", values=data_in_order)
 
         conn.close()
@@ -151,9 +157,6 @@ def update_label_periodically():
 
     # Update the time remaining label
     update_time_remaining_label()
-
-    # Update the history table
-    update_history_table()
 
     # Update the label periodically
     window.after(1000, update_label_periodically)
@@ -179,6 +182,7 @@ def update_time_remaining_label():
     # Format the time as a string
     formatted_time = format_time(days, hours, minutes, seconds)
     time_remaining_var.set(formatted_time)
+
 
 def get_unique_dates():
     try:
@@ -213,7 +217,6 @@ def update_config():
         database_name = database_name_entry.get()
         objet_mail = objet_mail_entry.get()
         message_mail = message_mail_entry.get()
-
 
         # Update the config object with the new values
         config['DEFAULT']['smtp_serveur'] = smtp_serveur
@@ -414,11 +417,13 @@ if __name__ == "__main__":
     time_remaining_label.pack(pady=10)
 
     # Create a Treeview widget to display the history table
-    history_tree = ttk.Treeview(window, columns=("Date", "Heure", "Email", "Donnée", "Statut"), show="headings",
-                                style='Custom.Treeview')
+    history_tree = ttk.Treeview(window, columns=("Date", "Heure", "Email", "Objet", "Message", "Donnée", "Statut"),
+                                show="headings", style='Custom.Treeview')
     history_tree.heading("Date", text="Date", anchor=tk.CENTER)
     history_tree.heading("Heure", text="Heure", anchor=tk.CENTER)
     history_tree.heading("Email", text="Email", anchor=tk.CENTER)
+    history_tree.heading("Objet", text="Objet", anchor=tk.CENTER)
+    history_tree.heading("Message", text="Message", anchor=tk.CENTER)
     history_tree.heading("Donnée", text="Donnée", anchor=tk.CENTER)
     history_tree.heading("Statut", text="Statut", anchor=tk.CENTER)
 
@@ -440,4 +445,3 @@ if __name__ == "__main__":
 
     # Start the tkinter main loop
     window.mainloop()
-
