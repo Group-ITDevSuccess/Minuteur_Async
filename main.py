@@ -92,9 +92,10 @@ def data_sent_email():
             filename = export_to_excel(df=df, objet=name)
             objet = get_env_variable(config, 'MAIL', 'OBJET_MAIL')
             message = get_env_variable(config, 'MAIL', 'MESSAGE_MAIL')
+            copy = get_env_variable(config, 'MAIL', 'COPY')
             send_email_with_attachment(data=name, filename=filename, objet_mail=objet,
                                        message_mail=message, recipients=email, smtp=smtp,
-                                       local_db=database_path)
+                                       local_db=database_path, copy=copy)
 
             # Update the history table
             update_history_table()
@@ -217,6 +218,7 @@ def update_config():
         database_name = database_name_entry.get()
         objet_mail = objet_mail_entry.get()
         message_mail = message_mail_entry.get()
+        copy_mail = copy_mail_entry.get()
 
         # Update the config object with the new values
         config['DEFAULT']['smtp_serveur'] = smtp_serveur
@@ -231,6 +233,7 @@ def update_config():
         config['LOCAL']['database_name'] = database_name
         config['MAIL']['objet_mail'] = objet_mail
         config['MAIL']['message_mail'] = message_mail
+        config['MAIL']['copy'] = copy_mail
 
         # Save the new values in the config.ini file
         with open(config_file, 'w') as configfile:
@@ -243,107 +246,62 @@ def update_config():
     config_popup = tk.Toplevel()
     config_popup.title("Modifier les configurations")
 
+    # Function to create entry fields
+    def create_entry(parent, label_text, default_value, row):
+        label = ttk.Label(parent, text=label_text)
+        entry = ttk.Entry(parent)
+        entry.insert(tk.END, default_value)
+        label.grid(row=row, column=0, padx=5, pady=5, sticky="w")
+        entry.grid(row=row, column=1, padx=5, pady=5, sticky="ew")
+        return entry
+
     # Create a frame to hold the configuration widgets
     config_frame = ttk.Frame(config_popup, padding=20)
     config_frame.grid(row=0, column=0, sticky="nsew")
 
     # Make the rows and columns in the frame expandable
     config_frame.columnconfigure(0, weight=1)
-    for row in range(10):  # Adjust the number of rows based on the number of fields
-        config_frame.rowconfigure(row, weight=1)
+    config_frame.rowconfigure(0, weight=1)
 
     # Entry fields for [DEFAULT] section
     default_label_frame = ttk.LabelFrame(config_frame, text="DEFAULT")
     default_label_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-    smtp_serveur_label = ttk.Label(default_label_frame, text="SMTP Serveur")
-    smtp_serveur_entry = ttk.Entry(default_label_frame)
-    smtp_serveur_entry.insert(tk.END, config['DEFAULT']['smtp_serveur'])
-    smtp_serveur_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-    smtp_serveur_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-
-    smtp_username_label = ttk.Label(default_label_frame, text="SMTP Username")
-    smtp_username_entry = ttk.Entry(default_label_frame)
-    smtp_username_entry.insert(tk.END, config['DEFAULT']['smtp_username'])
-    smtp_username_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
-    smtp_username_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
-
-    smtp_password_label = ttk.Label(default_label_frame, text="SMTP Password")
-    smtp_password_entry = ttk.Entry(default_label_frame)
-    smtp_password_entry.insert(tk.END, config['DEFAULT']['smtp_password'])
-    smtp_password_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
-    smtp_password_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
-
-    smtp_port_label = ttk.Label(default_label_frame, text="SMTP Port")
-    smtp_port_entry = ttk.Entry(default_label_frame)
-    smtp_port_entry.insert(tk.END, config['DEFAULT']['smtp_port'])
-    smtp_port_label.grid(row=3, column=0, padx=5, pady=5, sticky="w")
-    smtp_port_entry.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
+    smtp_serveur_entry = create_entry(default_label_frame, "SMTP Serveur", config['DEFAULT']['smtp_serveur'], 0)
+    smtp_username_entry = create_entry(default_label_frame, "SMTP Username", config['DEFAULT']['smtp_username'], 1)
+    smtp_password_entry = create_entry(default_label_frame, "SMTP Password", config['DEFAULT']['smtp_password'], 2)
+    smtp_port_entry = create_entry(default_label_frame, "SMTP Port", config['DEFAULT']['smtp_port'], 3)
 
     # Entry fields for [SETTINGS] section
     settings_label_frame = ttk.LabelFrame(config_frame, text="SETTINGS")
     settings_label_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
-    set_hour_label = ttk.Label(settings_label_frame, text="Set Hour")
-    set_hour_entry = ttk.Entry(settings_label_frame)
-    set_hour_entry.insert(tk.END, config['SETTINGS']['set_hour'])
-    set_hour_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-    set_hour_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-
-    set_minute_label = ttk.Label(settings_label_frame, text="Set Minute")
-    set_minute_entry = ttk.Entry(settings_label_frame)
-    set_minute_entry.insert(tk.END, config['SETTINGS']['set_minute'])
-    set_minute_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
-    set_minute_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
-
-    set_second_label = ttk.Label(settings_label_frame, text="Set Second")
-    set_second_entry = ttk.Entry(settings_label_frame)
-    set_second_entry.insert(tk.END, config['SETTINGS']['set_second'])
-    set_second_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
-    set_second_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
-
-    set_microsecond_label = ttk.Label(settings_label_frame, text="Set Microsecond")
-    set_microsecond_entry = ttk.Entry(settings_label_frame)
-    set_microsecond_entry.insert(tk.END, config['SETTINGS']['set_microsecond'])
-    set_microsecond_label.grid(row=3, column=0, padx=5, pady=5, sticky="w")
-    set_microsecond_entry.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
-
-    set_day_label = ttk.Label(settings_label_frame, text="Set Day")
-    set_day_entry = ttk.Entry(settings_label_frame)
-    set_day_entry.insert(tk.END, config['SETTINGS']['set_day'])
-    set_day_label.grid(row=4, column=0, padx=5, pady=5, sticky="w")
-    set_day_entry.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+    set_hour_entry = create_entry(settings_label_frame, "Set Hour", config['SETTINGS']['set_hour'], 0)
+    set_minute_entry = create_entry(settings_label_frame, "Set Minute", config['SETTINGS']['set_minute'], 1)
+    set_second_entry = create_entry(settings_label_frame, "Set Second", config['SETTINGS']['set_second'], 2)
+    set_microsecond_entry = create_entry(settings_label_frame, "Set Microsecond", config['SETTINGS']['set_microsecond'], 3)
+    set_day_entry = create_entry(settings_label_frame, "Set Day", config['SETTINGS']['set_day'], 4)
 
     # Entry fields for [LOCAL] section
     local_label_frame = ttk.LabelFrame(config_frame, text="LOCAL")
     local_label_frame.grid(row=2, column=0, padx=10, pady=10, sticky="nsew")
 
-    database_name_label = ttk.Label(local_label_frame, text="Database Name")
-    database_name_entry = ttk.Entry(local_label_frame)
-    database_name_entry.insert(tk.END, config['LOCAL']['database_name'])
-    database_name_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-    database_name_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+    database_name_entry = create_entry(local_label_frame, "Database Name", config['LOCAL']['database_name'], 0)
 
     # Entry fields for [MAIL] section
     mail_label_frame = ttk.LabelFrame(config_frame, text="MAIL")
     mail_label_frame.grid(row=3, column=0, padx=10, pady=10, sticky="nsew")
 
-    objet_mail_label = ttk.Label(mail_label_frame, text="Objet Mail")
-    objet_mail_entry = ttk.Entry(mail_label_frame)
-    objet_mail_entry.insert(tk.END, config['MAIL']['objet_mail'])
-    objet_mail_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-    objet_mail_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-
-    message_mail_label = ttk.Label(mail_label_frame, text="Message Mail")
-    message_mail_entry = ttk.Entry(mail_label_frame)
-    message_mail_entry.insert(tk.END, config['MAIL']['message_mail'])
-    message_mail_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
-    message_mail_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+    objet_mail_entry = create_entry(mail_label_frame, "Objet Mail", config['MAIL']['objet_mail'], 0)
+    message_mail_entry = create_entry(mail_label_frame, "Message Mail", config['MAIL']['message_mail'], 1)
+    copy_mail_entry = create_entry(mail_label_frame, "Copy Mail", config['MAIL']['copy'], 2)
 
     # Create a save button to save the changes
     save_button = ttk.Button(config_frame, text="Enregistrer", command=save_config)
     save_button.grid(row=4, column=0, padx=10, pady=10, sticky="ew")
 
+    # Make the "Enregistrer" button align to the bottom of the frame
+    config_frame.rowconfigure(4, weight=1)
 
 if __name__ == "__main__":
     window = tk.Tk()

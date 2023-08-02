@@ -4,17 +4,24 @@ import datetime
 from email.message import EmailMessage
 
 
-def send_email_with_attachment(data, filename, recipients, smtp, local_db, objet_mail, message_mail):
+def send_email_with_attachment(data, filename, recipients, smtp, local_db, objet_mail, message_mail, copy):
     try:
 
         # Vérifiez si les variables d'environnement sont définies
         if smtp.get('username') is None or smtp.get('password') is None or smtp.get('port') is None:
             raise ValueError("Les variables d'environnement doivent être définies.")
 
+        # Convertir la variable "copy" en une liste si elle n'est pas déjà une liste
+        if not isinstance(copy, list):
+            copy = [copy]
+
+        # Utiliser la liste "copy" pour l'attribut "Cc" de l'objet "message"
+
         message = EmailMessage()
         message["Subject"] = f"{objet_mail}, {data}"
         message["From"] = smtp.get('username')
         message["To"] = recipients  # Concaténer les adresses e-mail avec une virgule
+        message["Cc"] = ", ".join(copy)
 
         message.set_content(message_mail)
 
